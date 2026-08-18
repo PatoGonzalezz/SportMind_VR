@@ -12,16 +12,7 @@ Welcome al repositorio oficial de nuestro **Repositorio**. En este espacio recop
 
 ---
 
-## 🛠️ Tecnologías y Herramientas
-
-*(Agrega aquí las principales tecnologías o metodologías que utilizan)*
-
-* **Lenguajes:** `Python` / `JavaScript` / `C++` ...
-* **Frameworks & Herramientas:** `React` / `Node.js` / `Docker` ...
-* **Gestión de Proyecto:** `Git` / `Jira` / `Trello` ...
-
----
-
 ## 🚀 Estado del Proyecto
+  ## **FASE 1**
 
 > ⚠️ **Nota:** Repositorio en constante actualización conforme al avance de las entregas académicas.
