@@ -13,6 +13,6 @@ Welcome al repositorio oficial de nuestro **Proyecto final**. En este espacio re
 ---
 
 ## 🚀 Estado del Proyecto
-  ## **FASE 1**
+  ## **FASE 2 - Fase de Implementación**
 
 > ⚠️ **Nota:** Repositorio en constante actualización conforme al avance de las entregas académicas.
