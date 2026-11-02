@@ -1,4 +1,5 @@
 ---
+// src/pages/dashboard.astro
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -16,6 +17,7 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Solo administradores: la clase admin-only la gestiona el Layout -->
       <a
         href="/especialista/crear"
         id="btn-crear-entrenador"
@@ -330,11 +332,14 @@ import Layout from "../layouts/Layout.astro";
           ? gruposCrudos.map((g: string) => g.toLowerCase())
           : [String(gruposCrudos).toLowerCase()];
 
+        // Verificamos si es administrador
         const esAdmin = grupos.some(
           (g) => g.includes("administrador") || g.includes("admin"),
         );
 
         if (!esAdmin) {
+          // Ocultar elementos de administración en la barra lateral
+          // Buscamos los enlaces o contenedores por su texto o href común en el menú lateral
           const enlacesMenu = document.querySelectorAll(
             "aside a, nav a, .sidebar a, a",
           );
@@ -348,6 +353,7 @@ import Layout from "../layouts/Layout.astro";
               href.includes("logs") ||
               href.includes("crear")
             ) {
+              // Ocultar el elemento contenedor o el enlace completo
               (enlace as HTMLElement).style.display = "none";
             }
           });
@@ -358,11 +364,13 @@ import Layout from "../layouts/Layout.astro";
     }
 
     // ── Logging ──
+    // ── Obtener el nombre del usuario actual desde el token de Cognito ──
     function obtenerUsuarioActual(): string {
       const token = localStorage.getItem("sportmind_token");
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split(".")[1]));
+          // Priorizamos el atributo 'name' o los nombres alternativos guardados en Cognito, respaldando con el email
           return (
             payload.name ||
             payload.given_name ||
@@ -377,22 +385,20 @@ import Layout from "../layouts/Layout.astro";
       return localStorage.getItem("sportmind_user") || "Usuario";
     }
 
-    function registrarEventoLog(accion: string) {
-      const usuario = obtenerUsuarioActual();
-      const fechaHora = new Date().toLocaleString("es-CL");
-      const historialLogs = JSON.parse(
-        localStorage.getItem("sportmind_logs") || "[]",
+    // ── Logging dinámico para Admin y Especialistas ──
+    function registrarEventoLog(accion: string, nivel: "INFO" | "WARN" | "ERROR" = "INFO") {
+      registrarAccionAWS(accion, nivel).catch((err) =>
+        console.error("Error al registrar acción en AWS:", err),
       );
-      historialLogs.push(`[${fechaHora}] [INFO] [${usuario}]: ${accion}`);
-      localStorage.setItem("sportmind_logs", JSON.stringify(historialLogs));
     }
-
+    // ── Estado global ──
     let allSessions: SportmindSession[] = [];
     let currentFiltered: SportmindSession[] = [];
     let currentView: "cards" | "table" | "charts" = "cards";
     let chartPerformanceInstance: Chart | null = null;
     let chartClimbingInstance: Chart | null = null;
 
+    // ── Clases reutilizables (Tailwind) ──
     const VIEW_ACTIVE = ["bg-white", "text-blue-600", "shadow-sm"];
     const VIEW_INACTIVE = ["text-slate-500", "hover:text-slate-800"];
     const BTN_SECONDARY =
@@ -444,6 +450,7 @@ import Layout from "../layouts/Layout.astro";
     const iaMessage = (title: string, text: string) =>
       `<div class="ia-diagnosis-label text-xs font-semibold text-slate-500">${title}</div><div class="ia-confidence mt-1.5 text-[13px] leading-relaxed text-slate-600">${text}</div>`;
 
+    // ── Referencias DOM ──
     const loadingState = document.getElementById("loading-state");
     const cardsView = document.getElementById("cards-view");
     const tableView = document.getElementById("table-view");
@@ -452,21 +459,32 @@ import Layout from "../layouts/Layout.astro";
     const emptyState = document.getElementById("empty-state");
     const resultsCount = document.getElementById("results-count");
     const sourcesCount = document.getElementById("sources-count");
-    const searchInput = document.getElementById("search-input") as HTMLInputElement;
-    const btnClearSearch = document.getElementById("btn-clear-search") as HTMLButtonElement;
-    const filterSport = document.getElementById("filter-sport") as HTMLSelectElement;
-    const filterEmotion = document.getElementById("filter-emotion") as HTMLSelectElement;
+    const searchInput = document.getElementById(
+      "search-input",
+    ) as HTMLInputElement;
+    const btnClearSearch = document.getElementById(
+      "btn-clear-search",
+    ) as HTMLButtonElement;
+    const filterSport = document.getElementById(
+      "filter-sport",
+    ) as HTMLSelectElement;
+    const filterEmotion = document.getElementById(
+      "filter-emotion",
+    ) as HTMLSelectElement;
     const sortBy = document.getElementById("sort-by") as HTMLSelectElement;
     const viewCardsBtn = document.getElementById("view-cards-btn");
     const viewTableBtn = document.getElementById("view-table-btn");
     const viewChartsBtn = document.getElementById("view-charts-btn");
     const btnRefresh = document.getElementById("btn-refresh-s3");
-    const jsonModal = document.getElementById("session-modal") as HTMLDialogElement;
+    const jsonModal = document.getElementById(
+      "session-modal",
+    ) as HTMLDialogElement;
     const detailModalTitle = document.getElementById("detail-modal-title");
     const detailModalContent = document.getElementById("detail-modal-content");
     const jsonModalContent = document.getElementById("json-modal-content");
     const btnCloseModal = document.getElementById("btn-close-modal");
 
+    // ── Toast ──
     function showToast(msg: string) {
       const toast = document.getElementById("toast");
       const toastMsg = document.getElementById("toast-message");
@@ -481,6 +499,7 @@ import Layout from "../layouts/Layout.astro";
       }, 2800);
     }
 
+    // ── Helpers de UI ──
     function getInitials(name?: string): string {
       if (!name) return "??";
       const parts = name.trim().split(/\s+/);
@@ -497,7 +516,11 @@ import Layout from "../layouts/Layout.astro";
         .join(" ");
     }
 
-    function renderMeter(label: string, val: number | undefined, max = 5): string {
+    function renderMeter(
+      label: string,
+      val: number | undefined,
+      max = 5,
+    ): string {
       if (typeof val !== "number" || !Number.isFinite(val)) return "";
       const v = val;
       const pct = Math.min(Math.max((v / max) * 100, 0), 100);
@@ -521,6 +544,7 @@ import Layout from "../layouts/Layout.astro";
         </div>`;
     }
 
+    // ── Carga de datos ──
     async function loadData() {
       if (loadingState) loadingState.style.display = "grid";
       if (cardsView) cardsView.style.display = "none";
@@ -622,6 +646,7 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
+    // ── Render de Tarjetas ──
     function renderCards(sessions: SportmindSession[]) {
       if (!cardsView) return;
       cardsView.innerHTML = sessions
@@ -776,17 +801,18 @@ import Layout from "../layouts/Layout.astro";
                       ${!hasShootingData && !hasClimbingData ? '<p class="details-no-data text-sm text-slate-500 sm:col-span-2">No hay métricas adicionales registradas para esta sesión.</p>' : ""}
                     </div>
 
-                   <div class="detail-actions mt-4 flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
-  <button type="button" class="btn-json btn-view-raw ${BTN_SECONDARY}" data-session-index="${index}">Ver datos completos</button>
-  <button type="button" class="btn-copy-id ${BTN_SECONDARY}" data-id="${escapeHtml(String((session as any).session_id || (session as any).raw?.session_id || (session as any).raw?.id || (session as any).data?.session_id || 'ID-NO-ENCONTRADO'))}" title="Copiar ID de sesión">
-    ${ICON_COPY}
-    Copiar ID
-  </button>
-  <button type="button" class="btn-pdf-atleta ${BTN_SECONDARY}" data-id="${escapeHtml(String((session as any).session_id || (session as any).raw?.session_id || (session as any).raw?.id || (session as any).data?.session_id || 'ID-NO-ENCONTRADO'))}" title="Descargar PDF">
-    ${ICON_PDF}
-    PDF
-  </button>
-</div>
+                    <div class="detail-actions mt-4 flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
+                      <button type="button" class="btn-json btn-view-raw ${BTN_SECONDARY}" data-session-index="${index}">Ver datos completos</button>
+                      <button type="button" class="btn-copy-id ${BTN_SECONDARY}" data-id="${escapeHtml(session.session_id)}" title="Copiar ID de sesión">
+                        ${ICON_COPY}
+                        Copiar ID
+                      </button>
+                      <button type="button" class="btn-pdf-atleta ${BTN_SECONDARY}" title="Descargar PDF">
+                        ${ICON_PDF}
+                        PDF
+                      </button>
+                    </div>
+                  </section>
                 </div>
               </div>
             </template>
@@ -796,6 +822,7 @@ import Layout from "../layouts/Layout.astro";
       attachCardListeners();
     }
 
+    // ── Render de Tabla ──
     function renderTable(sessions: SportmindSession[]) {
       if (!tableBody) return;
       tableBody.innerHTML = sessions
@@ -837,10 +864,13 @@ import Layout from "../layouts/Layout.astro";
         .join("");
     }
 
+    // ── Render de Gráficos ──
     function renderCharts(sessions: SportmindSession[]) {
       const labels = sessions.map((s) => formatName(s.data.playerName));
 
-      const perfCanvas = document.getElementById("chart-performance") as HTMLCanvasElement;
+      const perfCanvas = document.getElementById(
+        "chart-performance",
+      ) as HTMLCanvasElement;
       if (perfCanvas) {
         if (chartPerformanceInstance) chartPerformanceInstance.destroy();
         chartPerformanceInstance = new Chart(perfCanvas, {
@@ -899,7 +929,9 @@ import Layout from "../layouts/Layout.astro";
         });
       }
 
-      const climbCanvas = document.getElementById("chart-climbing") as HTMLCanvasElement;
+      const climbCanvas = document.getElementById(
+        "chart-climbing",
+      ) as HTMLCanvasElement;
       if (climbCanvas) {
         if (chartClimbingInstance) chartClimbingInstance.destroy();
         chartClimbingInstance = new Chart(climbCanvas, {
@@ -945,9 +977,10 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
+    // ── Listeners de tarjetas ──
     function attachCardListeners() {
       document.querySelectorAll(".btn-view-details").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+        btn.addEventListener("click", (e) => {
           const index = Number(
             (e.currentTarget as HTMLElement).dataset.sessionIndex,
           );
@@ -969,10 +1002,7 @@ import Layout from "../layouts/Layout.astro";
             detailModalTitle.textContent = `Informe de ${formatName(session.data.playerName)} · ${session.data.selectedSport || "Sesión"}`;
           }
           jsonModal.showModal();
-          registrarEventoLog("Abrió el detalle de una sesión");
-
-          // INTEGRACIÓN AWS: Registrar apertura de sesión de evaluación
-          await registrarAccionAWS(`Abrió el detalle de la sesión de evaluación del atleta: ${formatName(session.data.playerName)}`);
+          registrarEventoLog(`Abrió el detalle de la sesión de evaluación del atleta: ${formatName(session?.data?.playerName)}`);
         });
       });
     }
@@ -1007,7 +1037,7 @@ import Layout from "../layouts/Layout.astro";
             behavior: "smooth",
             block: "nearest",
           });
-        registrarEventoLog("Consultó el JSON de la sesión");
+        registrarEventoLog(`Consultó los datos completos (JSON) de la sesión del atleta: ${formatName(session?.data?.playerName)}`);
         return;
       }
 
@@ -1025,10 +1055,9 @@ import Layout from "../layouts/Layout.astro";
           "Estamos procesando los datos de esta sesión…",
         );
 
-        const iaResponse = await import("../services/autorregulacion")
-          .then(({ predecirAutorregulacion }) =>
-            predecirAutorregulacion(session.data),
-          )
+        // ── ANÁLISIS CON IA NATIVA (modelo de conducta en RV) ──
+        const iaResponse = await import("../services/analisisIA")
+          .then(({ analizarSesion }) => analizarSesion(session.data))
           .catch((error) => {
             console.error("No fue posible cargar el módulo de IA.", error);
             return null;
@@ -1037,24 +1066,30 @@ import Layout from "../layouts/Layout.astro";
         target.innerHTML = original;
         target.disabled = false;
 
-        if (iaResponse) {
+        if (iaResponse?.estado === "ok") {
           const isOk = iaResponse.prediccion === 1;
           const prob = iaResponse.probabilidades
             ? (Math.max(...iaResponse.probabilidades) * 100).toFixed(1) + "%"
-            : "No disponible";
+            : "No disponible"; // Se omite si el modelo ONNX no devolvió distribución de probabilidad
+          const esConducta = iaResponse.modelo === "conducta";
+          const notaModelo = esConducta
+            ? "Modelo: conducta en RV (puntajes de tiro y tiempos de escalada)."
+            : "Se usó el modelo anterior porque el modelo de conducta no está disponible.";
           resultPanel.className = `${IA_PANEL_BASE} ${IA_PANEL_TONE[isOk ? "ok" : "risk"]}`;
           resultPanel.innerHTML = `
             <div class="ia-diagnosis-label text-xs font-semibold text-slate-500">Resultado del análisis automatizado</div>
             <div class="ia-diagnosis-title ${isOk ? "ok text-emerald-700" : "risk text-amber-700"} mt-1.5 flex items-center gap-2 text-[17px] font-extrabold">${isOk ? ICON_OK : ICON_WARN}<span>${escapeHtml(iaResponse.etiqueta)}</span></div>
             <div class="ia-confidence mt-2 text-[13px] text-slate-600">Certeza informada por el modelo: <strong class="text-slate-900">${prob}</strong></div>
+            <div class="ia-confidence mt-1 text-xs ${esConducta ? "text-slate-500" : "font-semibold text-amber-700"}">${notaModelo}</div>
             <div class="ia-confidence mt-1 text-xs text-slate-500">Resultado de apoyo; no reemplaza la evaluación profesional.</div>
           `;
-          registrarEventoLog(
-            `Análisis de IA ejecutado para sesión ${session.session_id.substring(0, 8)}`,
+          registrarEventoLog(`Ejecutó el análisis de IA (${iaResponse.modelo}) para la sesión del atleta: ${formatName(session.data.playerName)}`);
+        } else if (iaResponse?.estado === "insuficiente") {
+          resultPanel.className = `${IA_PANEL_BASE} ${IA_PANEL_TONE.idle}`;
+          resultPanel.innerHTML = iaMessage(
+            "Datos insuficientes para analizar",
+            escapeHtml(iaResponse.motivo),
           );
-
-          // INTEGRACIÓN AWS: Registrar ejecución de IA
-          await registrarAccionAWS(`Ejecutó el análisis de IA para la sesión del atleta: ${formatName(session.data.playerName)}`);
         } else {
           resultPanel.className = `${IA_PANEL_BASE} ${IA_PANEL_TONE.idle}`;
           resultPanel.innerHTML = iaMessage(
@@ -1065,10 +1100,11 @@ import Layout from "../layouts/Layout.astro";
         }
       }
     });
-
     async function loadDataSilencioso() {
       try {
         const nuevosDatos = await fetchSportmindData();
+        
+        // Verificamos si hay cambios en la cantidad o contenido para actualizar sin molestar al usuario
         if (nuevosDatos.length !== allSessions.length) {
           allSessions = nuevosDatos;
           populateSportFilter(allSessions);
@@ -1079,10 +1115,12 @@ import Layout from "../layouts/Layout.astro";
           showToast("Datos actualizados desde S3");
         }
       } catch (err) {
+        // Fallos silenciosos en segundo plano para no interrumpir al usuario si hay un microcorte
         console.error("Error en sincronización automática:", err);
       }
     } 
 
+    // ── Cambio de vista ──
     function setView(view: "cards" | "table" | "charts") {
       currentView = view;
       const order = ["cards", "table", "charts"];
@@ -1096,6 +1134,7 @@ import Layout from "../layouts/Layout.astro";
       renderCurrentView();
     }
 
+    // ── Event Listeners globales ──
     searchInput?.addEventListener("input", applyFilters);
     filterSport?.addEventListener("change", applyFilters);
     filterEmotion?.addEventListener("change", applyFilters);
@@ -1117,19 +1156,19 @@ import Layout from "../layouts/Layout.astro";
       });
 
     viewCardsBtn?.addEventListener("click", () => {
-      registrarEventoLog("Vista: Tarjetas");
+      registrarEventoLog("Cambió a la vista de Tarjetas");
       setView("cards");
     });
     viewTableBtn?.addEventListener("click", () => {
-      registrarEventoLog("Vista: Tabla");
+      registrarEventoLog("Cambió a la vista de Tabla");
       setView("table");
     });
     viewChartsBtn?.addEventListener("click", () => {
-      registrarEventoLog("Vista: Gráficos");
+      registrarEventoLog("Cambió a la vista de Gráficos");
       setView("charts");
     });
     btnRefresh?.addEventListener("click", () => {
-      registrarEventoLog("Actualizó datos de S3");
+      registrarEventoLog("Actualizó datos de sesiones desde S3");
       loadData();
     });
     btnCloseModal?.addEventListener("click", () => jsonModal?.close());
@@ -1137,14 +1176,18 @@ import Layout from "../layouts/Layout.astro";
       if (e.target === jsonModal) jsonModal.close();
     });
 
+    // ── Inicio ──
     restringirVistasPorRol();
     loadData();
+    // Actualización automática cada 15 segundos (Polling en segundo plano)
     setInterval(() => {
-      loadDataSilencioso();
-    }, 15000);
+      // Llamamos a loadData de forma silenciosa para no mostrar el skeleton de carga completo
+    loadDataSilencioso();
+    }, 15000); //15 segundos
   </script>
   <script>
     import { inicializarGeneradorPdf } from "../services/generadorpdf";
+
     inicializarGeneradorPdf();
   </script>
 </Layout>
