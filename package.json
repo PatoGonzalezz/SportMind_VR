@@ -1,7 +1,7 @@
 {
   "name": "fe-sportmind",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.0.85",
   "engines": {
     "node": ">=22.12.0"
   },
