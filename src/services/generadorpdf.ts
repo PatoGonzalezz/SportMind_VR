@@ -1,3 +1,4 @@
+import { registrarAccionAWS } from "./loggerservice";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
 
@@ -323,6 +324,7 @@ export function inicializarGeneradorPdf(): void {
       document.body.appendChild(divOculto);
 
       await generarInformePdf(divOculto, idSesion);
+      await registrarAccionAWS(`Descargó el informe en PDF de la sesión #${idSesion}`);
 
     } catch (error: any) {
       console.error("Error al exportar:", error);

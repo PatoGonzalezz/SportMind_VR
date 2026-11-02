@@ -155,6 +155,7 @@ import Layout from "../layouts/Layout.astro";
 
   <script>
     import { fetchSportmindData } from "../services/sportmindService";
+    import { LOGS_API_URL } from "../services/loggerservice";
 
     const escapeHtml = (value: unknown) =>
       String(value ?? "").replace(/[&<>"']/g, (c) =>
@@ -199,41 +200,58 @@ import Layout from "../layouts/Layout.astro";
     const messageRow = (text: string, error = false) =>
       `<tr><td colspan="4" class="px-6 py-10 text-center ${error ? "text-red-600" : "text-slate-500"}">${text}</td></tr>`;
 
-    function initRecentActivity() {
+    function renderActivityRows(logs: string[]) {
       const activityBody = document.getElementById("activity-body");
       if (!activityBody) return;
+      if (!logs || logs.length === 0) {
+        activityBody.innerHTML = messageRow("Aún no hay actividad registrada.");
+        return;
+      }
+      const ultimosLogs = logs.slice(-5).reverse();
+      activityBody.innerHTML = ultimosLogs.map((log: string) => {
+        const match = log.match(/\[(.*?)\]\s*\[(.*?)\]\s*\[(.*?)\]:\s*(.*)/);
+        const fecha = escapeHtml(match ? match[1] : "Reciente");
+        const usuario = escapeHtml(match ? match[3] : "Sistema");
+        const accion = escapeHtml(match ? match[4] : log);
 
+        return `
+          <tr class="transition-colors hover:bg-slate-50/70">
+            <td class="whitespace-nowrap px-6 py-3.5 tabular-nums text-slate-500">${fecha}</td>
+            <td class="px-6 py-3.5 font-semibold text-slate-900">${usuario}</td>
+            <td class="px-6 py-3.5 text-slate-700">${accion}</td>
+            <td class="px-6 py-3.5">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                <svg viewBox="0 0 20 20" fill="none" class="size-3" aria-hidden="true">
+                  <path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Correcto
+              </span>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    async function initRecentActivity() {
+      // 1. Mostrar de inmediato respaldo local si existe
       try {
-        const logs = JSON.parse(localStorage.getItem("sportmind_logs") || "[]");
-        if (logs.length === 0) {
-          activityBody.innerHTML = messageRow("Aún no hay actividad registrada.");
-          return;
+        const localLogs = JSON.parse(localStorage.getItem("sportmind_logs") || "[]");
+        if (localLogs.length > 0) renderActivityRows(localLogs);
+      } catch (_) {}
+
+      // 2. Consultar registros reales actualizados desde AWS
+      try {
+        const res = await fetch(LOGS_API_URL);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.logs)) {
+          renderActivityRows(data.logs);
+          localStorage.setItem("sportmind_logs", JSON.stringify(data.logs));
         }
-
-        const ultimosLogs = logs.slice(-5).reverse();
-        activityBody.innerHTML = ultimosLogs.map((log: string) => {
-          const match = log.match(/\[(.*?)\]\s*\[(.*?)\]\s*\[(.*?)\]:\s*(.*)/);
-          const fecha = escapeHtml(match ? match[1] : "Reciente");
-          const usuario = escapeHtml(match ? match[3] : "Sistema");
-          const accion = escapeHtml(match ? match[4] : log);
-
-          return `
-            <tr class="transition-colors hover:bg-slate-50/70">
-              <td class="whitespace-nowrap px-6 py-3.5 tabular-nums text-slate-500">${fecha}</td>
-              <td class="px-6 py-3.5 font-semibold text-slate-900">${usuario}</td>
-              <td class="px-6 py-3.5 text-slate-700">${accion}</td>
-              <td class="px-6 py-3.5">
-                <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                  <svg viewBox="0 0 20 20" fill="none" class="size-3" aria-hidden="true">
-                    <path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  Correcto
-                </span>
-              </td>
-            </tr>`;
-        }).join("");
       } catch (e) {
-        activityBody.innerHTML = messageRow("No se pudo leer el historial de actividad.", true);
+        // Si no hay datos locales ni de red, mostrar aviso
+        const activityBody = document.getElementById("activity-body");
+        if (activityBody && activityBody.children.length === 0) {
+          activityBody.innerHTML = messageRow("Aún no hay actividad registrada.");
+        }
       }
     }
 

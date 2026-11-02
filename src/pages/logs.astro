@@ -116,7 +116,7 @@ import Layout from "../layouts/Layout.astro";
       }
     })();
 
-    const LOGS_API_URL = "https://gx2dhrqhecasrejvbkcuxvogz40fjxfl.lambda-url.us-east-1.on.aws/"; 
+    import { LOGS_API_URL } from "../services/loggerservice"; 
     const container = document.getElementById("contenedor-logs");
     const btnLimpiar = document.getElementById("btn-limpiar-logs");
     const logCount = document.getElementById("log-count");
@@ -160,6 +160,11 @@ import Layout from "../layouts/Layout.astro";
           return;
         }
 
+        // Mantener sincronizado el respaldo local
+        try {
+          localStorage.setItem("sportmind_logs", JSON.stringify(historial));
+        } catch (_) {}
+
         if (logCount)
           logCount.textContent = `${historial.length} evento${historial.length > 1 ? "s" : ""}`;
         
@@ -170,7 +175,19 @@ import Layout from "../layouts/Layout.astro";
           container.scrollTop = container.scrollHeight;
         }
       } catch (e) {
-        console.error("Error al cargar los logs:", e);
+        console.error("Error al cargar los logs desde AWS:", e);
+        // Respaldo sin conexión: cargar desde localStorage si falla AWS
+        try {
+          const localLogs = JSON.parse(localStorage.getItem("sportmind_logs") || "[]");
+          if (localLogs.length > 0) {
+            const nuevoHtml = localLogs.map(parseLogEntry).join("");
+            container.innerHTML = nuevoHtml;
+            if (logCount)
+              logCount.textContent = `${localLogs.length} eventos (copia local)`;
+            return;
+          }
+        } catch (_) {}
+        container.innerHTML = '<p class="py-10 text-center text-sm italic text-red-400">Error al consultar los logs en AWS. Revisa tu conexión.</p>';
       }
     }
 
@@ -183,6 +200,7 @@ import Layout from "../layouts/Layout.astro";
     btnConfirmar?.addEventListener("click", async () => {
       try {
         await fetch(LOGS_API_URL, { method: "DELETE" });
+        localStorage.removeItem("sportmind_logs");
         await cargarLogs();
       } catch (e) {
         console.error("Error al limpiar logs", e);
