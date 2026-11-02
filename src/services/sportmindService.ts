@@ -29,6 +29,7 @@ export interface SportmindSessionData {
 export interface SportmindSession {
   timestamp: string;
   session_id: string;
+  assigned_specialist?: string | null;
   data: SportmindSessionData;
   raw?: unknown;
 }
@@ -64,6 +65,7 @@ export function normalizeSession(raw: unknown): SportmindSession {
     return {
       timestamp: new Date().toISOString(),
       session_id: "unknown",
+      assigned_specialist: null,
       data: {},
       raw,
     };
@@ -75,6 +77,7 @@ export function normalizeSession(raw: unknown): SportmindSession {
     return {
       timestamp: String(obj.timestamp || new Date().toISOString()),
       session_id: String(obj.session_id || "sin-id"),
+      assigned_specialist: (obj.assigned_specialist as string) || null,
       data: obj.data as SportmindSessionData,
       raw,
     };
@@ -83,6 +86,7 @@ export function normalizeSession(raw: unknown): SportmindSession {
   return {
     timestamp: String(obj.timestamp || new Date().toISOString()),
     session_id: String(obj.session_id || "sin-id"),
+    assigned_specialist: (obj.assigned_specialist as string) || null,
     data: obj as SportmindSessionData,
     raw,
   };
@@ -103,7 +107,7 @@ export async function fetchSingleSportmindData(url: string): Promise<SportmindSe
 }
 
 /**
- * Consulta y combina datos de AWS S3 en paralelo.
+ * Consulta y combina datos de AWS S3 en paralelo, aplicando el filtro local por códigos vinculados.
  */
 export async function fetchSportmindData(sources?: string | string[]): Promise<SportmindSession[]> {
   const urls = sources
@@ -118,7 +122,7 @@ export async function fetchSportmindData(sources?: string | string[]): Promise<S
     urls.map((url) => fetchSingleSportmindData(url)),
   );
 
-  const combinedRecords: SportmindSession[] = [];
+  let combinedRecords: SportmindSession[] = [];
   const errors: string[] = [];
 
   results.forEach((result, index) => {
@@ -132,6 +136,31 @@ export async function fetchSportmindData(sources?: string | string[]): Promise<S
 
   if (combinedRecords.length === 0 && errors.length === urls.length) {
     throw new Error("No se pudo cargar ningún archivo JSON desde S3.");
+  }
+
+  // Filtrado por rol y códigos locales en el navegador
+  const token = localStorage.getItem("sportmind_token");
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const gruposCrudos = payload["cognito:groups"] || payload["groups"] || [];
+      const grupos = Array.isArray(gruposCrudos)
+        ? gruposCrudos.map((g: string) => g.toLowerCase())
+        : [String(gruposCrudos).toLowerCase()];
+
+      const esAdmin = grupos.some((g) => g.includes("administrador") || g.includes("admin"));
+
+      // Si NO es administrador, filtramos según los códigos de 8 dígitos guardados en el navegador
+      if (!esAdmin) {
+        const codigosVinculados: string[] = JSON.parse(localStorage.getItem("sportmind_linked_codes") || "[]");
+        combinedRecords = combinedRecords.filter((session) => {
+          const sessionId = (session.session_id || "").toLowerCase();
+          return codigosVinculados.some((codigo) => sessionId.startsWith(codigo));
+        });
+      }
+    } catch (e) {
+      console.error("Error al filtrar por códigos locales:", e);
+    }
   }
 
   return combinedRecords.sort(
