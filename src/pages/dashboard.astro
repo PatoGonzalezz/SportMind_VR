@@ -1,14 +1,16 @@
 ---
-// src/pages/dashboard.astro
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
- 
   <!-- ── ENCABEZADO ── -->
-  <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <header
+    class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+  >
     <div class="max-w-2xl">
-      <h1 class="text-[1.65rem] font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+      <h1
+        class="text-[1.65rem] font-extrabold tracking-tight text-slate-900 sm:text-3xl"
+      >
         Evaluaciones de atletas
       </h1>
       <p class="mt-1.5 text-sm leading-relaxed text-slate-500">
@@ -17,20 +19,43 @@ import Layout from "../layouts/Layout.astro";
     </div>
 
     <div class="flex flex-wrap items-center gap-2.5">
-      <!-- Solo administradores: la clase admin-only la gestiona el Layout -->
+      <!-- Botón de vincular para especialistas (oculto por defecto para administradores) -->
+      <button
+        type="button"
+        id="btn-abrir-modal-vincular"
+        class="specialist-only hidden inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+      >
+        <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
+          <path
+            d="M10 4v12M4 10h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
+        </svg>
+        Vincular sesión
+      </button>
+
       <a
         href="/especialista/crear"
         id="btn-crear-entrenador"
         class="admin-only inline-flex h-10 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
       >
         <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
-          <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <path
+            d="M10 4v12M4 10h12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
         </svg>
         Crear entrenador
       </a>
 
-      <p class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-600 shadow-sm">
-        <span class="size-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20" aria-hidden="true"></span>
+      <p
+        class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-600 shadow-sm"
+      >
+        <span
+          class="size-2 rounded-full bg-emerald-500 ring-4 ring-emerald-500/20"
+          aria-hidden="true"></span>
         <span id="sources-count" aria-live="polite">Conectando…</span>
       </p>
     </div>
@@ -42,30 +67,57 @@ import Layout from "../layouts/Layout.astro";
     class="mb-6 rounded-2xl bg-slate-900 p-6 text-white shadow-[0_12px_32px_-16px_rgba(15,23,42,0.5)] sm:p-8"
     aria-label="Resumen de evaluaciones filtradas"
   >
-    <h2 class="text-2xl font-extrabold tracking-tight text-slate-50">Administración clínica SportMind</h2>
+    <h2 class="text-2xl font-extrabold tracking-tight text-slate-50">
+      Administración clínica SportMind
+    </h2>
     <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
       Gestiona los reportes automatizados y la telemetría de las gafas VR.
     </p>
-    <dl class="mt-6 grid max-w-md grid-cols-2 divide-x divide-white/10 border-t border-white/10">
+    <dl
+      class="mt-6 grid max-w-md grid-cols-2 divide-x divide-white/10 border-t border-white/10"
+    >
       <div class="py-4 pr-5 sm:py-5">
         <dt class="text-[13px] font-medium text-slate-400">Atletas activos</dt>
-        <dd id="kpi-unique-athletes" class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50">—</dd>
+        <dd
+          id="kpi-unique-athletes"
+          class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50"
+        >
+          —
+        </dd>
       </div>
       <div class="py-4 pl-5 sm:py-5 sm:pl-8">
         <dt class="text-[13px] font-medium text-slate-400">Sesiones totales</dt>
-        <dd id="kpi-total-sessions" class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50">—</dd>
+        <dd
+          id="kpi-total-sessions"
+          class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50"
+        >
+          —
+        </dd>
       </div>
     </dl>
   </section>
 
   <!-- ── BARRA DE HERRAMIENTAS ── -->
-  <section class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5" aria-label="Búsqueda, filtros y vistas">
+  <section
+    class="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
+    aria-label="Búsqueda, filtros y vistas"
+  >
     <div class="flex flex-col gap-3 sm:flex-row">
       <div class="relative min-w-0 flex-1">
         <label for="search-input" class="sr-only">Buscar evaluaciones</label>
-        <svg viewBox="0 0 20 20" fill="none" class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true">
-          <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.8" />
-          <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          class="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+          aria-hidden="true"
+        >
+          <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.8"
+          ></circle>
+          <path
+            d="M13.5 13.5L17 17"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"></path>
         </svg>
         <input
           type="text"
@@ -81,8 +133,17 @@ import Layout from "../layouts/Layout.astro";
           aria-label="Limpiar búsqueda"
           class="absolute right-2 top-1/2 size-7 -translate-y-1/2 cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
-            <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 5l10 10M15 5L5 15"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"></path>
           </svg>
         </button>
       </div>
@@ -95,17 +156,39 @@ import Layout from "../layouts/Layout.astro";
         >
           <option value="all">Todos los deportes</option>
         </select>
-        <svg viewBox="0 0 20 20" fill="none" class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true">
-          <path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 7.5l5 5 5-5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
         </svg>
       </div>
     </div>
 
     <details class="group mt-3">
-      <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-lg py-1.5 text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-details-marker]:hidden">
+      <summary
+        class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-lg py-1.5 text-[13px] font-semibold text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 [&::-webkit-details-marker]:hidden"
+      >
         Más filtros
-        <svg viewBox="0 0 20 20" fill="none" class="size-4 transition-transform group-open:rotate-180" aria-hidden="true">
-          <path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          class="size-4 transition-transform group-open:rotate-180"
+          aria-hidden="true"
+        >
+          <path
+            d="M5 7.5l5 5 5-5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
         </svg>
       </summary>
       <div class="mt-2.5 flex flex-col gap-3 sm:flex-row">
@@ -122,8 +205,18 @@ import Layout from "../layouts/Layout.astro";
             <option value="enojado">🔥 Enojado</option>
             <option value="triste">🌧️ Triste</option>
           </select>
-          <svg viewBox="0 0 20 20" fill="none" class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true">
-            <path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 7.5l5 5 5-5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
         </div>
         <div class="relative sm:w-64">
@@ -138,28 +231,83 @@ import Layout from "../layouts/Layout.astro";
             <option value="shooting-desc">Mayor puntaje de tiro</option>
             <option value="climbing-asc">Menor tiempo de escalada</option>
           </select>
-          <svg viewBox="0 0 20 20" fill="none" class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true">
-            <path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 7.5l5 5 5-5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
         </div>
       </div>
     </details>
 
-    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-      <p id="results-count" class="text-sm font-medium text-slate-500" aria-live="polite">Cargando evaluaciones…</p>
+    <div
+      class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4"
+    >
+      <p
+        id="results-count"
+        class="text-sm font-medium text-slate-500"
+        aria-live="polite"
+      >
+        Cargando evaluaciones…
+      </p>
 
-      <div role="group" aria-label="Cambiar vista" class="inline-flex gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5">
+      <div
+        role="group"
+        aria-label="Cambiar vista"
+        class="inline-flex gap-0.5 rounded-xl border border-slate-200 bg-slate-50 p-0.5"
+      >
         <button
           type="button"
           id="view-cards-btn"
           aria-pressed="true"
           class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-white px-3 text-[13px] font-semibold text-blue-600 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
-            <rect x="3" y="3" width="6" height="6" rx="1.3" stroke="currentColor" stroke-width="1.7" />
-            <rect x="11" y="3" width="6" height="6" rx="1.3" stroke="currentColor" stroke-width="1.7" />
-            <rect x="3" y="11" width="6" height="6" rx="1.3" stroke="currentColor" stroke-width="1.7" />
-            <rect x="11" y="11" width="6" height="6" rx="1.3" stroke="currentColor" stroke-width="1.7" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <rect
+              x="3"
+              y="3"
+              width="6"
+              height="6"
+              rx="1.3"
+              stroke="currentColor"
+              stroke-width="1.7"></rect>
+            <rect
+              x="11"
+              y="3"
+              width="6"
+              height="6"
+              rx="1.3"
+              stroke="currentColor"
+              stroke-width="1.7"></rect>
+            <rect
+              x="3"
+              y="11"
+              width="6"
+              height="6"
+              rx="1.3"
+              stroke="currentColor"
+              stroke-width="1.7"></rect>
+            <rect
+              x="11"
+              y="11"
+              width="6"
+              height="6"
+              rx="1.3"
+              stroke="currentColor"
+              stroke-width="1.7"></rect>
           </svg>
           Tarjetas
         </button>
@@ -169,9 +317,22 @@ import Layout from "../layouts/Layout.astro";
           aria-pressed="false"
           class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-slate-500 transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
-            <rect x="3" y="4" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.7" />
-            <path d="M3 9h14M8 9v7" stroke="currentColor" stroke-width="1.7" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <rect
+              x="3"
+              y="4"
+              width="14"
+              height="12"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.7"></rect>
+            <path d="M3 9h14M8 9v7" stroke="currentColor" stroke-width="1.7"
+            ></path>
           </svg>
           Tabla
         </button>
@@ -181,8 +342,17 @@ import Layout from "../layouts/Layout.astro";
           aria-pressed="false"
           class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-[13px] font-semibold text-slate-500 transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
-            <path d="M4 16V9m6 7V4m6 12v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 16V9m6 7V4m6 12v-4"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"></path>
           </svg>
           Gráficos
         </button>
@@ -196,35 +366,54 @@ import Layout from "../layouts/Layout.astro";
       [0, 1, 2, 3].map(() => (
         <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div class="mb-5 flex items-center gap-3">
-            <div class="size-12 rounded-xl bg-slate-100 motion-safe:animate-pulse"></div>
+            <div class="size-12 rounded-xl bg-slate-100 motion-safe:animate-pulse" />
             <div class="flex-1 space-y-2">
-              <div class="h-4 w-2/3 rounded bg-slate-100 motion-safe:animate-pulse"></div>
-              <div class="h-3 w-1/2 rounded bg-slate-100 motion-safe:animate-pulse"></div>
+              <div class="h-4 w-2/3 rounded bg-slate-100 motion-safe:animate-pulse" />
+              <div class="h-3 w-1/2 rounded bg-slate-100 motion-safe:animate-pulse" />
             </div>
           </div>
-          <div class="mb-3 h-20 rounded-xl bg-slate-100 motion-safe:animate-pulse"></div>
-          <div class="h-10 w-44 rounded-xl bg-slate-100 motion-safe:animate-pulse"></div>
+          <div class="mb-3 h-20 rounded-xl bg-slate-100 motion-safe:animate-pulse" />
+          <div class="h-10 w-44 rounded-xl bg-slate-100 motion-safe:animate-pulse" />
         </div>
       ))
     }
   </div>
 
   <!-- ── VISTA 1: TARJETAS ── -->
-  <div id="cards-view" class="grid min-w-0 grid-cols-1 gap-5 min-[1100px]:grid-cols-2" style="display:none;"></div>
+  <div
+    id="cards-view"
+    class="grid min-w-0 grid-cols-1 gap-5 min-[1100px]:grid-cols-2"
+    style="display:none;"
+  >
+  </div>
 
   <!-- ── VISTA 2: TABLA ── -->
-  <div id="table-view" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm" style="display:none;">
+  <div
+    id="table-view"
+    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+    style="display:none;"
+  >
     <div class="overflow-x-auto">
       <table class="w-full min-w-[880px] border-collapse text-sm">
         <caption class="sr-only">Evaluaciones registradas</caption>
         <thead class="bg-slate-50">
-          <tr class="border-b border-slate-200 text-left text-[13px] font-semibold text-slate-500">
+          <tr
+            class="border-b border-slate-200 text-left text-[13px] font-semibold text-slate-500"
+          >
             <th scope="col" class="whitespace-nowrap px-5 py-3.5">Atleta</th>
             <th scope="col" class="whitespace-nowrap px-5 py-3.5">Deporte</th>
-            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Estado emocional</th>
-            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Tiro (fácil / difícil)</th>
-            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Escalada (fácil / difícil)</th>
-            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Emociones post</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Estado emocional</th
+            >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Tiro (fácil / difícil)</th
+            >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Escalada (fácil / difícil)</th
+            >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Emociones post</th
+            >
             <th scope="col" class="whitespace-nowrap px-5 py-3.5">Fecha</th>
           </tr>
         </thead>
@@ -235,28 +424,56 @@ import Layout from "../layouts/Layout.astro";
 
   <!-- ── VISTA 3: GRÁFICOS ── -->
   <div id="charts-view" class="grid gap-5 md:grid-cols-2" style="display:none;">
-    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <h3 class="text-[15px] font-bold text-slate-900">Rendimiento y confianza</h3>
-      <p class="mb-5 mt-0.5 text-xs text-slate-500">Escala del 1 al 5 por atleta</p>
-      <div class="relative h-[280px]"><canvas id="chart-performance"></canvas></div>
+    <section
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+    >
+      <h3 class="text-[15px] font-bold text-slate-900">
+        Rendimiento y confianza
+      </h3>
+      <p class="mb-5 mt-0.5 text-xs text-slate-500">
+        Escala del 1 al 5 por atleta
+      </p>
+      <div class="relative h-[280px]">
+        <canvas id="chart-performance"></canvas>
+      </div>
     </section>
-    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <section
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+    >
       <h3 class="text-[15px] font-bold text-slate-900">Tiempos de escalada</h3>
       <p class="mb-5 mt-0.5 text-xs text-slate-500">Segundos: menor es mejor</p>
-      <div class="relative h-[280px]"><canvas id="chart-climbing"></canvas></div>
+      <div class="relative h-[280px]">
+        <canvas id="chart-climbing"></canvas>
+      </div>
     </section>
   </div>
 
   <!-- ── ESTADO VACÍO ── -->
-  <div id="empty-state" class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center" style="display:none;">
-    <span class="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+  <div
+    id="empty-state"
+    class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center"
+    style="display:none;"
+  >
+    <span
+      class="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-400"
+    >
       <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
-        <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.8" />
-        <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        <circle cx="9" cy="9" r="5.5" stroke="currentColor" stroke-width="1.8"
+        ></circle>
+        <path
+          d="M13.5 13.5L17 17"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"></path>
       </svg>
     </span>
-    <h3 class="mt-4 text-lg font-bold text-slate-800">No se encontraron evaluaciones</h3>
-    <p class="mt-1 text-sm text-slate-500">Prueba con otro nombre o quita algún filtro.</p>
+    <h3 class="mt-4 text-lg font-bold text-slate-800">
+      No se encontraron evaluaciones
+    </h3>
+    <p class="mt-1 text-sm text-slate-500">
+      Prueba vinculando una sesión mediante su código de 8 dígitos o limpiando
+      los filtros.
+    </p>
     <button
       type="button"
       id="btn-reset-filters"
@@ -266,29 +483,124 @@ import Layout from "../layouts/Layout.astro";
     </button>
   </div>
 
+  <!-- ── MODAL ESTÉTICO: VINCULAR SESIÓN POR CÓDIGO ── -->
+  <dialog
+    id="modal-vincular"
+    class="fixed inset-0 m-auto w-[min(92vw,28rem)] rounded-2xl bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-6">
+      <div
+        class="flex items-center justify-between pb-3 border-b border-slate-100"
+      >
+        <h3 class="text-base font-extrabold text-slate-900">
+          Vincular nueva sesión
+        </h3>
+        <button
+          type="button"
+          id="btn-cerrar-modal-vincular"
+          class="text-slate-400 hover:text-slate-600"
+        >
+          <svg viewBox="0 0 20 20" fill="none" class="size-5">
+            <path
+              d="M5 5l10 10M15 5L5 15"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </div>
+      <p class="mt-3 text-sm text-slate-500 leading-relaxed">
+        Ingresa los primeros <strong class="text-slate-800">8 dígitos</strong> del
+        identificador de sesión (Session ID) para asociarla a tu cuenta.
+      </p>
+
+      <div class="mt-4">
+        <label
+          for="input-id-corto"
+          class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
+          >Código de 8 dígitos</label
+        >
+        <input
+          type="text"
+          id="input-id-corto"
+          maxlength="8"
+          placeholder="Ej: bf4f9865"
+          autocomplete="off"
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 font-mono text-center text-lg tracking-widest text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
+        />
+      </div>
+
+      <div
+        id="modal-vincular-msg"
+        class="mt-3 text-center text-xs font-medium"
+        style="display:none;"
+      >
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2.5 border-t border-slate-100 pt-4">
+        <button
+          type="button"
+          id="btn-cancelar-vincular"
+          class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="btn-ejecutar-vincular"
+          class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+        >
+          Vincular sesión
+        </button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- ── MODAL DETALLE DE SESIÓN ── -->
   <dialog
     id="session-modal"
     aria-labelledby="detail-modal-title"
     class="fixed inset-0 m-auto h-[min(860px,calc(100dvh-1.5rem))] max-h-[calc(100dvh-1.5rem)] w-[min(96vw,1280px)] max-w-none overflow-visible bg-transparent p-0 backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm"
   >
-    <div class="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-      <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
-        <h2 id="detail-modal-title" class="truncate text-base font-bold text-slate-900">Detalle de la sesión</h2>
+    <div
+      class="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+    >
+      <div
+        class="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6"
+      >
+        <h2
+          id="detail-modal-title"
+          class="truncate text-base font-bold text-slate-900"
+        >
+          Detalle de la sesión
+        </h2>
         <button
           type="button"
           id="btn-close-modal"
           aria-label="Cerrar detalle"
           class="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
-            <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-5"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 5l10 10M15 5L5 15"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"></path>
           </svg>
         </button>
       </div>
       <div class="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
         <div id="detail-modal-content"></div>
-        <pre id="json-modal-content" hidden class="mt-4 overflow-x-auto whitespace-pre rounded-xl bg-slate-900 p-5 font-mono text-xs leading-7 text-sky-300"></pre>
+        <pre
+          id="json-modal-content"
+          hidden
+          class="mt-4 overflow-x-auto whitespace-pre rounded-xl bg-slate-900 p-5 font-mono text-xs leading-7 text-sky-300">
+        </pre>
       </div>
     </div>
   </dialog>
@@ -300,9 +612,21 @@ import Layout from "../layouts/Layout.astro";
     aria-live="polite"
     class="pointer-events-none fixed bottom-6 right-6 z-[9999] translate-y-20 opacity-0 transition duration-300 motion-reduce:transition-none"
   >
-    <div class="flex items-center gap-2.5 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-xl">
-      <svg viewBox="0 0 20 20" fill="none" class="size-4 text-emerald-400" aria-hidden="true">
-        <path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    <div
+      class="flex items-center gap-2.5 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-xl"
+    >
+      <svg
+        viewBox="0 0 20 20"
+        fill="none"
+        class="size-4 text-emerald-400"
+        aria-hidden="true"
+      >
+        <path
+          d="M4.5 10.5l3.5 3.5 7.5-8"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
       </svg>
       <span id="toast-message">Copiado</span>
     </div>
@@ -319,7 +643,7 @@ import Layout from "../layouts/Layout.astro";
     import { registrarAccionAWS } from "../services/loggerservice";
     import Chart from "chart.js/auto";
 
-    // ── Restricción de Roles ──
+    // ── Restricción de Roles y Apertura de Modal ──
     function restringirVistasPorRol() {
       const token = localStorage.getItem("sportmind_token");
       if (!token) return;
@@ -339,7 +663,6 @@ import Layout from "../layouts/Layout.astro";
 
         if (!esAdmin) {
           // Ocultar elementos de administración en la barra lateral
-          // Buscamos los enlaces o contenedores por su texto o href común en el menú lateral
           const enlacesMenu = document.querySelectorAll(
             "aside a, nav a, .sidebar a, a",
           );
@@ -353,24 +676,96 @@ import Layout from "../layouts/Layout.astro";
               href.includes("logs") ||
               href.includes("crear")
             ) {
-              // Ocultar el elemento contenedor o el enlace completo
               (enlace as HTMLElement).style.display = "none";
             }
           });
+
+          // Mostrar el botón de vincular sesión para los especialistas
+          const btnAbrirModal = document.getElementById(
+            "btn-abrir-modal-vincular",
+          );
+          if (btnAbrirModal) btnAbrirModal.classList.remove("hidden");
         }
       } catch (e) {
         console.error("Error al validar los roles del token:", e);
       }
     }
 
+    // Lógica del Modal Estético de Vincular (LocalStorage)
+    const modalVincular = document.getElementById(
+      "modal-vincular",
+    ) as HTMLDialogElement;
+    const btnAbrirModal = document.getElementById("btn-abrir-modal-vincular");
+    const btnCerrarModal = document.getElementById("btn-cerrar-modal-vincular");
+    const btnCancelarVincular = document.getElementById(
+      "btn-cancelar-vincular",
+    );
+    const btnEjecutarVincular = document.getElementById(
+      "btn-ejecutar-vincular",
+    ) as HTMLButtonElement;
+    const inputIdCorto = document.getElementById(
+      "input-id-corto",
+    ) as HTMLInputElement;
+    const modalMsg = document.getElementById(
+      "modal-vincular-msg",
+    ) as HTMLElement;
+
+    btnAbrirModal?.addEventListener("click", () => {
+      if (inputIdCorto) inputIdCorto.value = "";
+      if (modalMsg) modalMsg.style.display = "none";
+      modalVincular?.showModal();
+    });
+
+    const cerrarModalVincular = () => modalVincular?.close();
+    btnCerrarModal?.addEventListener("click", cerrarModalVincular);
+    btnCancelarVincular?.addEventListener("click", cerrarModalVincular);
+
+    btnEjecutarVincular?.addEventListener("click", () => {
+      const codigo = inputIdCorto.value.trim().toLowerCase();
+      if (codigo.length < 8) {
+        modalMsg.textContent = "⚠️ Debes ingresar al menos 8 dígitos.";
+        modalMsg.className =
+          "mt-3 text-center text-xs font-semibold text-amber-600";
+        modalMsg.style.display = "block";
+        return;
+      }
+
+      try {
+        const codigosVinculados: string[] = JSON.parse(
+          localStorage.getItem("sportmind_linked_codes") || "[]",
+        );
+
+        if (!codigosVinculados.includes(codigo)) {
+          codigosVinculados.push(codigo);
+          localStorage.setItem(
+            "sportmind_linked_codes",
+            JSON.stringify(codigosVinculados),
+          );
+        }
+
+        modalMsg.textContent = "✅ ¡Sesión vinculada con éxito!";
+        modalMsg.className =
+          "mt-3 text-center text-xs font-semibold text-emerald-600";
+        modalMsg.style.display = "block";
+
+        setTimeout(() => {
+          modalVincular.close();
+          window.location.reload();
+        }, 800);
+      } catch (err: any) {
+        modalMsg.textContent = "❌ Error al guardar localmente.";
+        modalMsg.className =
+          "mt-3 text-center text-xs font-semibold text-red-600";
+        modalMsg.style.display = "block";
+      }
+    });
+
     // ── Logging ──
-    // ── Obtener el nombre del usuario actual desde el token de Cognito ──
     function obtenerUsuarioActual(): string {
       const token = localStorage.getItem("sportmind_token");
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split(".")[1]));
-          // Priorizamos el atributo 'name' o los nombres alternativos guardados en Cognito, respaldando con el email
           return (
             payload.name ||
             payload.given_name ||
@@ -385,20 +780,21 @@ import Layout from "../layouts/Layout.astro";
       return localStorage.getItem("sportmind_user") || "Usuario";
     }
 
-    // ── Logging dinámico para Admin y Especialistas ──
-    function registrarEventoLog(accion: string, nivel: "INFO" | "WARN" | "ERROR" = "INFO") {
+    function registrarEventoLog(
+      accion: string,
+      nivel: "INFO" | "WARN" | "ERROR" = "INFO",
+    ) {
       registrarAccionAWS(accion, nivel).catch((err) =>
         console.error("Error al registrar acción en AWS:", err),
       );
     }
-    // ── Estado global ──
+
     let allSessions: SportmindSession[] = [];
     let currentFiltered: SportmindSession[] = [];
     let currentView: "cards" | "table" | "charts" = "cards";
     let chartPerformanceInstance: Chart | null = null;
     let chartClimbingInstance: Chart | null = null;
 
-    // ── Clases reutilizables (Tailwind) ──
     const VIEW_ACTIVE = ["bg-white", "text-blue-600", "shadow-sm"];
     const VIEW_INACTIVE = ["text-slate-500", "hover:text-slate-800"];
     const BTN_SECONDARY =
@@ -410,12 +806,30 @@ import Layout from "../layouts/Layout.astro";
       risk: "border-amber-200 bg-amber-50",
     };
     const EMOTION_TONES: Record<string, { badge: string; dot: string }> = {
-      emerald: { badge: "bg-emerald-50 text-emerald-700 ring-emerald-200", dot: "bg-emerald-500" },
-      cyan: { badge: "bg-cyan-50 text-cyan-700 ring-cyan-200", dot: "bg-cyan-500" },
-      amber: { badge: "bg-amber-50 text-amber-700 ring-amber-200", dot: "bg-amber-500" },
-      purple: { badge: "bg-purple-50 text-purple-700 ring-purple-200", dot: "bg-purple-500" },
-      rose: { badge: "bg-rose-50 text-rose-700 ring-rose-200", dot: "bg-rose-500" },
-      neutral: { badge: "bg-slate-50 text-slate-600 ring-slate-200", dot: "bg-slate-400" },
+      emerald: {
+        badge: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+        dot: "bg-emerald-500",
+      },
+      cyan: {
+        badge: "bg-cyan-50 text-cyan-700 ring-cyan-200",
+        dot: "bg-cyan-500",
+      },
+      amber: {
+        badge: "bg-amber-50 text-amber-700 ring-amber-200",
+        dot: "bg-amber-500",
+      },
+      purple: {
+        badge: "bg-purple-50 text-purple-700 ring-purple-200",
+        dot: "bg-purple-500",
+      },
+      rose: {
+        badge: "bg-rose-50 text-rose-700 ring-rose-200",
+        dot: "bg-rose-500",
+      },
+      neutral: {
+        badge: "bg-slate-50 text-slate-600 ring-slate-200",
+        dot: "bg-slate-400",
+      },
     };
     let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -427,8 +841,16 @@ import Layout from "../layouts/Layout.astro";
     const ICON_WARN = `<svg viewBox="0 0 20 20" fill="none" class="size-5 shrink-0" aria-hidden="true"><path d="M10 3.5l7 12.2H3L10 3.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 8.5v3.2M10 13.9v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
     const escapeHtml = (value: unknown) =>
-      String(value ?? "").replace(/[&<>"']/g, (c) =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string),
+      String(value ?? "").replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c] as string,
       );
 
     function emotionTone(badgeClass?: string) {
@@ -450,7 +872,6 @@ import Layout from "../layouts/Layout.astro";
     const iaMessage = (title: string, text: string) =>
       `<div class="ia-diagnosis-label text-xs font-semibold text-slate-500">${title}</div><div class="ia-confidence mt-1.5 text-[13px] leading-relaxed text-slate-600">${text}</div>`;
 
-    // ── Referencias DOM ──
     const loadingState = document.getElementById("loading-state");
     const cardsView = document.getElementById("cards-view");
     const tableView = document.getElementById("table-view");
@@ -484,7 +905,6 @@ import Layout from "../layouts/Layout.astro";
     const jsonModalContent = document.getElementById("json-modal-content");
     const btnCloseModal = document.getElementById("btn-close-modal");
 
-    // ── Toast ──
     function showToast(msg: string) {
       const toast = document.getElementById("toast");
       const toastMsg = document.getElementById("toast-message");
@@ -499,7 +919,6 @@ import Layout from "../layouts/Layout.astro";
       }, 2800);
     }
 
-    // ── Helpers de UI ──
     function getInitials(name?: string): string {
       if (!name) return "??";
       const parts = name.trim().split(/\s+/);
@@ -544,7 +963,6 @@ import Layout from "../layouts/Layout.astro";
         </div>`;
     }
 
-    // ── Carga de datos ──
     async function loadData() {
       if (loadingState) loadingState.style.display = "grid";
       if (cardsView) cardsView.style.display = "none";
@@ -646,7 +1064,6 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
-    // ── Render de Tarjetas ──
     function renderCards(sessions: SportmindSession[]) {
       if (!cardsView) return;
       cardsView.innerHTML = sessions
@@ -671,7 +1088,10 @@ import Layout from "../layouts/Layout.astro";
           const shootingSummary =
             typeof d.shootingScoreEasy === "number" ||
             typeof d.shootingScoreHard === "number"
-              ? highlightChip("Tiro", `${d.shootingScoreEasy ?? "—"} / ${d.shootingScoreHard ?? "—"} pts`)
+              ? highlightChip(
+                  "Tiro",
+                  `${d.shootingScoreEasy ?? "—"} / ${d.shootingScoreHard ?? "—"} pts`,
+                )
               : "";
           const climbingSummary =
             typeof d.climbingTimeEasy === "number" ||
@@ -822,7 +1242,6 @@ import Layout from "../layouts/Layout.astro";
       attachCardListeners();
     }
 
-    // ── Render de Tabla ──
     function renderTable(sessions: SportmindSession[]) {
       if (!tableBody) return;
       tableBody.innerHTML = sessions
@@ -864,7 +1283,6 @@ import Layout from "../layouts/Layout.astro";
         .join("");
     }
 
-    // ── Render de Gráficos ──
     function renderCharts(sessions: SportmindSession[]) {
       const labels = sessions.map((s) => formatName(s.data.playerName));
 
@@ -977,7 +1395,6 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
-    // ── Listeners de tarjetas ──
     function attachCardListeners() {
       document.querySelectorAll(".btn-view-details").forEach((btn) => {
         btn.addEventListener("click", (e) => {
@@ -1002,7 +1419,9 @@ import Layout from "../layouts/Layout.astro";
             detailModalTitle.textContent = `Informe de ${formatName(session.data.playerName)} · ${session.data.selectedSport || "Sesión"}`;
           }
           jsonModal.showModal();
-          registrarEventoLog(`Abrió el detalle de la sesión de evaluación del atleta: ${formatName(session?.data?.playerName)}`);
+          registrarEventoLog(
+            `Abrió el detalle de la sesión de evaluación del atleta: ${formatName(session?.data?.playerName)}`,
+          );
         });
       });
     }
@@ -1037,7 +1456,9 @@ import Layout from "../layouts/Layout.astro";
             behavior: "smooth",
             block: "nearest",
           });
-        registrarEventoLog(`Consultó los datos completos (JSON) de la sesión del atleta: ${formatName(session?.data?.playerName)}`);
+        registrarEventoLog(
+          `Consultó los datos completos (JSON) de la sesión del atleta: ${formatName(session?.data?.playerName)}`,
+        );
         return;
       }
 
@@ -1055,7 +1476,6 @@ import Layout from "../layouts/Layout.astro";
           "Estamos procesando los datos de esta sesión…",
         );
 
-        // ── ANÁLISIS CON IA NATIVA (modelo de conducta en RV) ──
         const iaResponse = await import("../services/analisisIA")
           .then(({ analizarSesion }) => analizarSesion(session.data))
           .catch((error) => {
@@ -1070,7 +1490,7 @@ import Layout from "../layouts/Layout.astro";
           const isOk = iaResponse.prediccion === 1;
           const prob = iaResponse.probabilidades
             ? (Math.max(...iaResponse.probabilidades) * 100).toFixed(1) + "%"
-            : "No disponible"; // Se omite si el modelo ONNX no devolvió distribución de probabilidad
+            : "No disponible";
           const esConducta = iaResponse.modelo === "conducta";
           const notaModelo = esConducta
             ? "Modelo: conducta en RV (puntajes de tiro y tiempos de escalada)."
@@ -1083,7 +1503,9 @@ import Layout from "../layouts/Layout.astro";
             <div class="ia-confidence mt-1 text-xs ${esConducta ? "text-slate-500" : "font-semibold text-amber-700"}">${notaModelo}</div>
             <div class="ia-confidence mt-1 text-xs text-slate-500">Resultado de apoyo; no reemplaza la evaluación profesional.</div>
           `;
-          registrarEventoLog(`Ejecutó el análisis de IA (${iaResponse.modelo}) para la sesión del atleta: ${formatName(session.data.playerName)}`);
+          registrarEventoLog(
+            `Ejecutó el análisis de IA (${iaResponse.modelo}) para la sesión del atleta: ${formatName(session.data.playerName)}`,
+          );
         } else if (iaResponse?.estado === "insuficiente") {
           resultPanel.className = `${IA_PANEL_BASE} ${IA_PANEL_TONE.idle}`;
           resultPanel.innerHTML = iaMessage(
@@ -1100,11 +1522,10 @@ import Layout from "../layouts/Layout.astro";
         }
       }
     });
+
     async function loadDataSilencioso() {
       try {
         const nuevosDatos = await fetchSportmindData();
-        
-        // Verificamos si hay cambios en la cantidad o contenido para actualizar sin molestar al usuario
         if (nuevosDatos.length !== allSessions.length) {
           allSessions = nuevosDatos;
           populateSportFilter(allSessions);
@@ -1115,12 +1536,10 @@ import Layout from "../layouts/Layout.astro";
           showToast("Datos actualizados desde S3");
         }
       } catch (err) {
-        // Fallos silenciosos en segundo plano para no interrumpir al usuario si hay un microcorte
         console.error("Error en sincronización automática:", err);
       }
-    } 
+    }
 
-    // ── Cambio de vista ──
     function setView(view: "cards" | "table" | "charts") {
       currentView = view;
       const order = ["cards", "table", "charts"];
@@ -1134,7 +1553,6 @@ import Layout from "../layouts/Layout.astro";
       renderCurrentView();
     }
 
-    // ── Event Listeners globales ──
     searchInput?.addEventListener("input", applyFilters);
     filterSport?.addEventListener("change", applyFilters);
     filterEmotion?.addEventListener("change", applyFilters);
@@ -1176,14 +1594,11 @@ import Layout from "../layouts/Layout.astro";
       if (e.target === jsonModal) jsonModal.close();
     });
 
-    // ── Inicio ──
     restringirVistasPorRol();
     loadData();
-    // Actualización automática cada 15 segundos (Polling en segundo plano)
     setInterval(() => {
-      // Llamamos a loadData de forma silenciosa para no mostrar el skeleton de carga completo
-    loadDataSilencioso();
-    }, 15000); //15 segundos
+      loadDataSilencioso();
+    }, 15000);
   </script>
   <script>
     import { inicializarGeneradorPdf } from "../services/generadorpdf";
