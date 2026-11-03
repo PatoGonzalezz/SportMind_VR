@@ -5,6 +5,8 @@ export interface SportmindSessionData {
   playerName?: string;
   selectedSport?: string;
   gender?: string;
+  playerAge?: number;
+  sessionDurationSeconds?: number;
   emotionalState?: string;
   preEmotionTiroEasy?: string | number;
   preEmotionTiroHard?: string | number;
@@ -150,7 +152,7 @@ export async function fetchSportmindData(sources?: string | string[]): Promise<S
 
       const esAdmin = grupos.some((g) => g.includes("administrador") || g.includes("admin"));
 
-      // Si NO es administrador, filtramos según los códigos de 8 dígitos guardados en el navegador
+      // Si NO es administrador, filtra localmente por los códigos guardados en este navegador.
       if (!esAdmin) {
         const codigosVinculados: string[] = JSON.parse(localStorage.getItem("sportmind_linked_codes") || "[]");
         combinedRecords = combinedRecords.filter((session) => {
