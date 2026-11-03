@@ -401,6 +401,8 @@ import Layout from "../layouts/Layout.astro";
             class="border-b border-slate-200 text-left text-[13px] font-semibold text-slate-500"
           >
             <th scope="col" class="whitespace-nowrap px-5 py-3.5">Atleta</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Edad</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Duración</th>
             <th scope="col" class="whitespace-nowrap px-5 py-3.5">Deporte</th>
             <th scope="col" class="whitespace-nowrap px-5 py-3.5"
               >Estado emocional</th
@@ -471,7 +473,7 @@ import Layout from "../layouts/Layout.astro";
       No se encontraron evaluaciones
     </h3>
     <p class="mt-1 text-sm text-slate-500">
-      Prueba vinculando una sesión mediante su código de 8 dígitos o limpiando
+      Prueba vinculando una sesión mediante su código de 6 dígitos o limpiando
       los filtros.
     </p>
     <button
@@ -510,21 +512,24 @@ import Layout from "../layouts/Layout.astro";
         </button>
       </div>
       <p class="mt-3 text-sm text-slate-500 leading-relaxed">
-        Ingresa los primeros <strong class="text-slate-800">8 dígitos</strong> del
-        identificador de sesión (Session ID) para asociarla a tu cuenta.
+        Ingresa el código de <strong class="text-slate-800">6 dígitos</strong>.
+        Se guardará solo en este dispositivo para filtrar tus sesiones; no modifica
+        el JSON en S3 ni asigna la sesión en la nube.
       </p>
 
       <div class="mt-4">
         <label
           for="input-id-corto"
           class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
-          >Código de 8 dígitos</label
+          >Código de 6 dígitos</label
         >
         <input
           type="text"
           id="input-id-corto"
-          maxlength="8"
-          placeholder="Ej: bf4f9865"
+          maxlength="6"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          placeholder="Ej: 042781"
           autocomplete="off"
           class="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 font-mono text-center text-lg tracking-widest text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100"
         />
@@ -721,9 +726,9 @@ import Layout from "../layouts/Layout.astro";
     btnCancelarVincular?.addEventListener("click", cerrarModalVincular);
 
     btnEjecutarVincular?.addEventListener("click", () => {
-      const codigo = inputIdCorto.value.trim().toLowerCase();
-      if (codigo.length < 8) {
-        modalMsg.textContent = "⚠️ Debes ingresar al menos 8 dígitos.";
+      const codigo = inputIdCorto.value.trim();
+      if (!/^\d{6}$/.test(codigo)) {
+        modalMsg.textContent = "⚠️ Ingresa exactamente 6 dígitos.";
         modalMsg.className =
           "mt-3 text-center text-xs font-semibold text-amber-600";
         modalMsg.style.display = "block";
@@ -731,6 +736,9 @@ import Layout from "../layouts/Layout.astro";
       }
 
       try {
+        btnEjecutarVincular.disabled = true;
+        btnEjecutarVincular.textContent = "Guardando…";
+
         const codigosVinculados: string[] = JSON.parse(
           localStorage.getItem("sportmind_linked_codes") || "[]",
         );
@@ -743,7 +751,7 @@ import Layout from "../layouts/Layout.astro";
           );
         }
 
-        modalMsg.textContent = "✅ ¡Sesión vinculada con éxito!";
+        modalMsg.textContent = "✅ Código guardado en este dispositivo. S3 no fue modificado.";
         modalMsg.className =
           "mt-3 text-center text-xs font-semibold text-emerald-600";
         modalMsg.style.display = "block";
@@ -753,10 +761,13 @@ import Layout from "../layouts/Layout.astro";
           window.location.reload();
         }, 800);
       } catch (err: any) {
-        modalMsg.textContent = "❌ Error al guardar localmente.";
+        modalMsg.textContent = `❌ ${err?.message || "No se pudo guardar el código localmente."}`;
         modalMsg.className =
           "mt-3 text-center text-xs font-semibold text-red-600";
         modalMsg.style.display = "block";
+      } finally {
+        btnEjecutarVincular.disabled = false;
+        btnEjecutarVincular.textContent = "Vincular sesión";
       }
     });
 
@@ -935,6 +946,17 @@ import Layout from "../layouts/Layout.astro";
         .join(" ");
     }
 
+    function formatSessionId(sessionId?: string): string {
+      return sessionId ? sessionId.slice(0, 6) : "—";
+    }
+
+    function formatDuration(seconds?: number): string {
+      if (typeof seconds !== "number" || !Number.isFinite(seconds) || seconds < 0) return "—";
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.round(seconds % 60);
+      return minutes > 0 ? `${minutes} min ${remainingSeconds} s` : `${remainingSeconds} s`;
+    }
+
     function renderMeter(
       label: string,
       val: number | undefined,
@@ -1076,6 +1098,7 @@ import Layout from "../layouts/Layout.astro";
           const initials = escapeHtml(getInitials(d.playerName));
           const sport = escapeHtml(d.selectedSport || "Deporte");
           const gender = escapeHtml(d.gender || "N/A");
+          const duration = formatDuration(d.sessionDurationSeconds);
           const date = formatDateTime(session.timestamp);
           const climbEasy =
             typeof d.climbingTimeEasy === "number"
@@ -1176,8 +1199,11 @@ import Layout from "../layouts/Layout.astro";
                   <h3 class="athlete-name truncate text-base font-extrabold text-slate-900">${name}</h3>
                   <p class="athlete-meta mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500">
                     <span class="badge-gender rounded-md bg-slate-100 px-2 py-0.5 font-semibold text-slate-600">${gender}</span>
+                    ${typeof d.playerAge === "number" && Number.isFinite(d.playerAge) ? `<span>${d.playerAge} años</span>` : ""}
                     <span>${sport}</span>
+                    <span title="Duración de la sesión">Duración: ${duration}</span>
                     <span class="tabular-nums">${date}</span>
+                    <span class="font-mono" title="ID de sesión">ID: ${escapeHtml(formatSessionId(session.session_id))}</span>
                   </p>
                 </div>
               </div>
@@ -1262,6 +1288,8 @@ import Layout from "../layouts/Layout.astro";
               </div>
             </td>
             <td class="px-5 py-3.5 font-medium text-slate-700">${escapeHtml(d.selectedSport || "—")}</td>
+            <td class="whitespace-nowrap px-5 py-3.5 tabular-nums text-slate-700">${typeof d.playerAge === "number" && Number.isFinite(d.playerAge) ? `${d.playerAge} años` : "—"}</td>
+            <td class="whitespace-nowrap px-5 py-3.5 tabular-nums text-slate-700">${formatDuration(d.sessionDurationSeconds)}</td>
             <td class="px-5 py-3.5">${emotionBadge(em)}</td>
             <td class="whitespace-nowrap px-5 py-3.5 tabular-nums">
               <span class="font-bold text-emerald-600">${d.shootingScoreEasy ?? "—"} pts</span>
