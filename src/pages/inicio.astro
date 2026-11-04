@@ -1,0 +1,261 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <header class="mb-6">
+    <h1 class="text-[1.65rem] font-extrabold tracking-tight text-slate-900 sm:text-3xl">Inicio</h1>
+    <p class="mt-1.5 text-sm leading-relaxed text-slate-500">Resumen operativo del sistema.</p>
+  </header>
+
+  <!-- Fila superior: bienvenida + accesos rápidos -->
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <!-- Vista general (solo administración) -->
+    <section class="admin-only rounded-2xl bg-slate-900 p-6 text-white shadow-[0_12px_32px_-16px_rgba(15,23,42,0.5)] sm:p-8" aria-labelledby="hero-title">
+      <h2 id="hero-title" class="text-2xl font-extrabold tracking-tight text-slate-50">Panel central de control</h2>
+      <p class="mt-2.5 max-w-xl text-sm leading-relaxed text-slate-400">
+        Revisa el estado operativo global del sistema, supervisa el flujo de evaluaciones y controla la actividad general de la plataforma.
+      </p>
+
+      <dl class="mt-7 grid grid-cols-1 divide-y divide-white/10 border-t border-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div class="py-4 sm:px-5 sm:py-5 sm:first:pl-0">
+          <dt class="text-[13px] font-medium text-slate-400">Sesiones registradas</dt>
+          <dd id="stat-sessions" class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50">—</dd>
+        </div>
+        <div class="py-4 sm:px-5 sm:py-5">
+          <dt class="text-[13px] font-medium text-slate-400">Atletas evaluados</dt>
+          <dd id="stat-athletes" class="mt-1 text-3xl font-extrabold tabular-nums text-slate-50">—</dd>
+        </div>
+        <div class="py-4 sm:px-5 sm:py-5 sm:last:pr-0">
+          <dt class="text-[13px] font-medium text-slate-400">Estado de S3</dt>
+          <dd class="mt-2.5 inline-flex items-center gap-2 text-base font-semibold text-emerald-400">
+            <span class="size-2 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20" aria-hidden="true"></span>
+            Conectado
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- Bienvenida para especialistas (se oculta si el usuario es admin) -->
+    <section id="specialist-welcome" class="flex flex-col justify-center rounded-2xl bg-slate-900 p-6 text-white shadow-[0_12px_32px_-16px_rgba(15,23,42,0.5)] sm:p-8" aria-labelledby="welcome-title">
+      <h2 id="welcome-title" class="text-2xl font-extrabold tracking-tight text-slate-50">¡Bienvenido a SportMind!</h2>
+      <p class="mt-2.5 text-sm leading-relaxed text-slate-400">
+        Accede rápidamente a las evaluaciones de tus atletas y consulta métricas en tiempo real.
+      </p>
+      <a
+        href="/dashboard"
+        class="mt-6 inline-flex h-11 w-fit items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+      >
+        Ir a evaluaciones
+        <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
+          <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+    </section>
+
+    <!-- Accesos rápidos -->
+    <section class="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" aria-labelledby="quick-title">
+      <h3 id="quick-title" class="text-base font-extrabold tracking-tight text-slate-900">Accesos rápidos</h3>
+      <p class="mt-1 text-sm text-slate-500">Atajos para las tareas más frecuentes.</p>
+
+      <ul class="mt-4 flex flex-col gap-2">
+        <li>
+          <a href="/dashboard" class="group flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 transition-colors group-hover:text-blue-600 group-hover:ring-blue-200">
+              <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
+                <path d="M4 16V9m6 7V4m6 12v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="flex-1">Ver evaluaciones y métricas</span>
+            <svg viewBox="0 0 20 20" fill="none" class="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">
+              <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a href="/ajustes" class="group flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 transition-colors group-hover:text-blue-600 group-hover:ring-blue-200">
+              <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
+                <path d="M3 6h8m4 0h2M3 14h2m4 0h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <circle cx="13" cy="6" r="2" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="7" cy="14" r="2" stroke="currentColor" stroke-width="1.8" />
+              </svg>
+            </span>
+            <span class="flex-1">Ajustes de cuenta</span>
+            <svg viewBox="0 0 20 20" fill="none" class="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">
+              <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="/especialista/crear" class="group flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 transition-colors group-hover:text-blue-600 group-hover:ring-blue-200">
+              <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
+                <circle cx="8" cy="7" r="3" stroke="currentColor" stroke-width="1.8" />
+                <path d="M2.5 17c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M16 6v5M13.5 8.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="flex-1">Crear nuevo profesional</span>
+            <svg viewBox="0 0 20 20" fill="none" class="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">
+              <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+        <li class="admin-only">
+          <a href="/logs" class="group flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <span class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200 transition-colors group-hover:text-blue-600 group-hover:ring-blue-200">
+              <svg viewBox="0 0 20 20" fill="none" class="size-5" aria-hidden="true">
+                <rect x="4.5" y="4" width="11" height="13" rx="2" stroke="currentColor" stroke-width="1.8" />
+                <path d="M8 4V3h4v1M7.5 9h5M7.5 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <span class="flex-1">Consultar auditoría</span>
+            <svg viewBox="0 0 20 20" fill="none" class="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-600" aria-hidden="true">
+              <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </li>
+      </ul>
+
+      <p class="mt-auto pt-5 text-right text-xs text-slate-400">SportMind v0.0.6</p>
+    </section>
+  </div>
+
+  <!-- Actividad reciente (solo administración) -->
+  <section class="admin-only mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm" aria-labelledby="activity-title">
+    <div class="flex items-start justify-between gap-4 px-6 pt-6">
+      <div>
+        <h3 id="activity-title" class="text-base font-extrabold tracking-tight text-slate-900">Actividad reciente</h3>
+        <p class="mt-1 text-sm text-slate-500">Últimos eventos registrados por el sistema.</p>
+      </div>
+      <a href="/logs" class="shrink-0 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+        Ver todo
+      </a>
+    </div>
+
+    <div class="mt-4 overflow-x-auto">
+      <table class="w-full min-w-[620px] border-collapse text-sm">
+        <caption class="sr-only">Últimos eventos registrados</caption>
+        <thead class="bg-slate-50">
+          <tr class="border-y border-slate-200 text-left text-[13px] font-semibold text-slate-500">
+            <th scope="col" class="whitespace-nowrap px-6 py-3">Fecha y hora</th>
+            <th scope="col" class="whitespace-nowrap px-6 py-3">Usuario</th>
+            <th scope="col" class="whitespace-nowrap px-6 py-3">Acción</th>
+            <th scope="col" class="whitespace-nowrap px-6 py-3">Resultado</th>
+          </tr>
+        </thead>
+        <tbody id="activity-body" class="divide-y divide-slate-100">
+          <tr>
+            <td colspan="4" class="px-6 py-10 text-center text-slate-500">Cargando actividad…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    import { fetchSportmindData } from "../services/sportmindService";
+    import { LOGS_API_URL } from "../services/loggerservice";
+
+    const escapeHtml = (value: unknown) =>
+      String(value ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string)
+      );
+
+    // Oculta la tarjeta de bienvenida si el usuario es administrador
+    try {
+      const token = localStorage.getItem("sportmind_token");
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const grupos = payload["cognito:groups"] || payload["groups"] || [];
+        const esAdmin = Array.isArray(grupos)
+          ? grupos.some((g) => String(g).toLowerCase().includes("admin"))
+          : String(grupos).toLowerCase().includes("admin");
+
+        if (esAdmin) {
+          const specCard = document.getElementById("specialist-welcome");
+          if (specCard) specCard.style.display = "none";
+        }
+      }
+    } catch (e) {}
+
+    async function initHomeStats() {
+      try {
+        const sessions = await fetchSportmindData();
+        const statSessions = document.getElementById("stat-sessions");
+        const statAthletes = document.getElementById("stat-athletes");
+        const fmt = new Intl.NumberFormat("es-CL");
+
+        if (statSessions) statSessions.textContent = fmt.format(sessions.length);
+
+        const uniqueAthletes = new Set(
+          sessions.map((s) => (s.data.playerName || "").toLowerCase().trim()).filter(Boolean)
+        );
+        if (statAthletes) statAthletes.textContent = fmt.format(uniqueAthletes.size);
+      } catch (e) {
+        console.error("Error al cargar estadísticas de inicio:", e);
+      }
+    }
+
+    const messageRow = (text: string, error = false) =>
+      `<tr><td colspan="4" class="px-6 py-10 text-center ${error ? "text-red-600" : "text-slate-500"}">${text}</td></tr>`;
+
+    function renderActivityRows(logs: string[]) {
+      const activityBody = document.getElementById("activity-body");
+      if (!activityBody) return;
+      if (!logs || logs.length === 0) {
+        activityBody.innerHTML = messageRow("Aún no hay actividad registrada.");
+        return;
+      }
+      const ultimosLogs = logs.slice(-5).reverse();
+      activityBody.innerHTML = ultimosLogs.map((log: string) => {
+        const match = log.match(/\[(.*?)\]\s*\[(.*?)\]\s*\[(.*?)\]:\s*(.*)/);
+        const fecha = escapeHtml(match ? match[1] : "Reciente");
+        const usuario = escapeHtml(match ? match[3] : "Sistema");
+        const accion = escapeHtml(match ? match[4] : log);
+
+        return `
+          <tr class="transition-colors hover:bg-slate-50/70">
+            <td class="whitespace-nowrap px-6 py-3.5 tabular-nums text-slate-500">${fecha}</td>
+            <td class="px-6 py-3.5 font-semibold text-slate-900">${usuario}</td>
+            <td class="px-6 py-3.5 text-slate-700">${accion}</td>
+            <td class="px-6 py-3.5">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                <svg viewBox="0 0 20 20" fill="none" class="size-3" aria-hidden="true">
+                  <path d="M4.5 10.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Correcto
+              </span>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    async function initRecentActivity() {
+      // 1. Mostrar de inmediato respaldo local si existe
+      try {
+        const localLogs = JSON.parse(localStorage.getItem("sportmind_logs") || "[]");
+        if (localLogs.length > 0) renderActivityRows(localLogs);
+      } catch (_) {}
+
+      // 2. Consultar registros reales actualizados desde AWS
+      try {
+        const res = await fetch(LOGS_API_URL);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.logs)) {
+          renderActivityRows(data.logs);
+          localStorage.setItem("sportmind_logs", JSON.stringify(data.logs));
+        }
+      } catch (e) {
+        // Si no hay datos locales ni de red, mostrar aviso
+        const activityBody = document.getElementById("activity-body");
+        if (activityBody && activityBody.children.length === 0) {
+          activityBody.innerHTML = messageRow("Aún no hay actividad registrada.");
+        }
+      }
+    }
+
+    initHomeStats();
+    initRecentActivity();
+  </script>
+</Layout>

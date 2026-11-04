@@ -1,0 +1,89 @@
+---
+// Componente de notificación de actualización flotante
+---
+
+<div
+    id="update-banner"
+    class="fixed bottom-4 right-4 z-50 hidden max-w-sm rounded-xl bg-slate-900/90 border border-slate-700/80 p-4 text-white shadow-2xl backdrop-blur-md transition-all duration-300"
+>
+    <div class="flex items-start gap-3">
+        <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400"
+        >
+            <svg
+                class="h-5 w-5 animate-bounce"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                ></path>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <h4 id="update-title" class="text-sm font-semibold text-slate-100">
+                Actualización disponible
+            </h4>
+            <p id="update-desc" class="text-xs text-slate-400 mt-0.5">
+                Descargando nueva versión en segundo plano...
+            </p>
+
+            <div id="action-container" class="mt-3 hidden">
+                <button
+                    id="restart-btn"
+                    class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow transition-colors cursor-pointer"
+                >
+                    Reiniciar y actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Declaración de tipos para TypeScript dentro del navegador
+    declare global {
+        interface Window {
+            electronAPI?: {
+                isElectron?: boolean;
+                onUpdateAvailable?: (callback: () => void) => void;
+                onUpdateDownloaded?: (callback: () => void) => void;
+                restartApp?: () => void;
+            };
+        }
+    }
+
+    if (window.electronAPI?.isElectron) {
+        const banner = document.getElementById("update-banner");
+        const title = document.getElementById("update-title");
+        const desc = document.getElementById("update-desc");
+        const actionContainer = document.getElementById("action-container");
+        const restartBtn = document.getElementById("restart-btn");
+
+        window.electronAPI.onUpdateAvailable?.(() => {
+            if (banner && title && desc) {
+                banner.classList.remove("hidden");
+                title.innerText = "Actualización encontrada";
+                desc.innerText = "Se está descargando la última versión...";
+            }
+        });
+
+        window.electronAPI.onUpdateDownloaded?.(() => {
+            if (banner && title && desc && actionContainer) {
+                banner.classList.remove("hidden");
+                title.innerText = "¡Actualización lista!";
+                desc.innerText =
+                    "Los cambios se aplicarán al reiniciar la aplicación.";
+                actionContainer.classList.remove("hidden");
+            }
+        });
+
+        restartBtn?.addEventListener("click", () => {
+            window.electronAPI?.restartApp?.();
+        });
+    }
+</script>

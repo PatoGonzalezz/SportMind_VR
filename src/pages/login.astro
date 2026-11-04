@@ -1,0 +1,545 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon-sportmind.png" />
+    <title>Acceso | SportMind</title>
+    <meta
+      name="description"
+      content="Inicia sesión en SportMind para acceder a la plataforma de análisis de rendimiento deportivo."
+    />
+
+    <!-- Redirigir si ya hay sesión activa -->
+    <script is:inline>
+      (function () {
+        const token = localStorage.getItem("sportmind_token");
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            if (!payload.exp || payload.exp * 1000 > Date.now()) {
+              window.location.replace("/inicio");
+            }
+          } catch {}
+        }
+      })();
+    </script>
+
+    <style>
+      /*
+        El script alterna estas clases dinámicamente (msg-box → visible → tone),
+        por eso se declaran aquí y no como utilidades estáticas de Tailwind.
+      */
+      .msg-box {
+        display: none;
+      }
+      .msg-box.visible {
+        display: block;
+        margin-top: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.75rem;
+        padding: 0.625rem 0.875rem;
+        text-align: center;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1.5;
+        animation: msg-in 0.25s ease both;
+      }
+      .msg-box.loading {
+        border-color: #bfdbfe;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+      }
+      .msg-box.success {
+        border-color: #a7f3d0;
+        background-color: #ecfdf5;
+        color: #047857;
+      }
+      .msg-box.error {
+        border-color: #fecaca;
+        background-color: #fef2f2;
+        color: #b91c1c;
+      }
+      .msg-box.warning {
+        border-color: #fde68a;
+        background-color: #fffbeb;
+        color: #b45309;
+      }
+      @keyframes msg-in {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    class="relative h-dvh overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 text-slate-900 antialiased"
+  >
+    <!-- Decoración de fondo -->
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0 overflow-hidden">
+      <div class="absolute -left-24 -top-28 size-[26rem] rounded-full bg-blue-400/20 blur-3xl"></div>
+      <div class="absolute -bottom-24 right-0 size-80 rounded-full bg-indigo-400/15 blur-3xl"></div>
+      <div class="absolute left-1/2 top-1/2 size-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-300/10 blur-3xl"></div>
+    </div>
+
+    <main
+      class="relative z-10 flex h-full items-center justify-center overflow-hidden p-[clamp(1rem,3.7vh,2.5rem)]"
+    >
+      <div
+        class="grid max-h-full w-full max-w-md grid-rows-[minmax(0,1fr)] overflow-hidden rounded-3xl border border-white/70 bg-white shadow-2xl shadow-slate-900/10 ring-1 ring-slate-900/5 lg:h-[min(100%,42rem)] lg:max-w-5xl lg:grid-cols-[minmax(0,1fr)_26rem]"
+      >
+        <!-- ══════════ Panel informativo (izquierda) ══════════ -->
+        <section
+          class="relative hidden min-h-0 flex-col justify-between overflow-y-auto overflow-x-hidden bg-slate-900 p-[clamp(1.25rem,3.7vh,2.5rem)] text-slate-300 lg:flex"
+        >
+          <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div class="absolute -right-24 -top-28 size-72 rounded-full bg-blue-500/25 blur-3xl"></div>
+            <div class="absolute -bottom-24 -left-20 size-64 rounded-full bg-violet-500/20 blur-3xl"></div>
+            <div
+              class="absolute inset-0 opacity-[0.12]"
+              style="background-image: linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px); background-size: 44px 44px; mask-image: radial-gradient(circle at 25% 15%, black, transparent 70%); -webkit-mask-image: radial-gradient(circle at 25% 15%, black, transparent 70%);"
+            >
+            </div>
+          </div>
+
+          <!-- Marca -->
+          <div class="relative">
+            <img
+              src="/logo-sportmind-horizontal.png"
+              alt="SportMind"
+              width="883"
+              height="238"
+              class="h-10 w-auto drop-shadow-[0_6px_20px_rgba(37,99,235,0.25)]"
+            />
+            <p class="mt-3 text-xs font-medium text-slate-400">Plataforma de entrenamiento psicológico</p>
+          </div>
+
+          <!-- Mensaje principal -->
+          <div class="relative mt-[clamp(0.10rem,1vh,3rem)]">
+            <h2 class="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white">
+              Entrena la regulación emocional para la competencia deportiva de alto rendimiento
+            </h2>
+            <p class="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
+              Visualiza sesiones, analiza emociones y obtén desempeño deportivo con
+              inteligencia artificial.
+            </p>  
+          </div>
+
+          <!-- Características -->
+          <ul class="relative mt-[clamp(0.75rem,4.45vh,3rem)] space-y-[clamp(0.5rem,1.5vh,1rem)]">
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-blue-300 ring-1 ring-inset ring-white/10"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 24 24" fill="none" class="size-4">
+                  <path
+                    d="M4 17V10m5 7V5m5 12v-4m5 4V8"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-slate-100">Evaluaciones en tiempo real</p>
+                <p class="mt-0.5 text-xs leading-relaxed text-slate-400">
+                  Datos sincronizados desde la nube.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-blue-300 ring-1 ring-inset ring-white/10"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 24 24" fill="none" class="size-4">
+                  <path
+                    d="M9.5 4.5a3 3 0 0 0-3 3v.6A3 3 0 0 0 5 11v2a3 3 0 0 0 1.5 2.6v.4a3 3 0 0 0 4.5 2.6M14.5 4.5a3 3 0 0 1 3 3v.6A3 3 0 0 1 19 11v2a3 3 0 0 1-1.5 2.6v.4a3 3 0 0 1-4.5 2.6M12 5v14"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-slate-100">Análisis con IA</p>
+                <p class="mt-0.5 text-xs leading-relaxed text-slate-400">
+                  Autorregulación emocional interpretada automáticamente.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-blue-300 ring-1 ring-inset ring-white/10"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 24 24" fill="none" class="size-4">
+                  <rect x="4.5" y="10" width="15" height="10" rx="2.5" stroke="currentColor" stroke-width="1.6"
+                  ></rect>
+                  <path
+                    d="M8 10V7.5a4 4 0 0 1 8 0V10"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"></path>
+                </svg>
+              </span>
+              <div>
+                <p class="text-sm font-semibold text-slate-100">Acceso seguro unificado</p>
+                <p class="mt-0.5 text-xs leading-relaxed text-slate-400">
+                  Autenticación cifrada de extremo a extremo.
+                </p>
+              </div>
+            </li>
+          </ul>
+
+          <p
+            class="relative mt-[clamp(0.75rem,4.45vh,3rem)] flex items-center gap-2 border-t border-white/10 pt-[clamp(0.75rem,2.2vh,1.5rem)] text-[11px] text-slate-500"
+          >
+            <svg viewBox="0 0 24 24" fill="none" class="size-3.5 shrink-0" aria-hidden="true">
+              <path
+                d="M12 3.5 5 6.4v5.2c0 4 3 7.1 7 8.9 4-1.8 7-4.9 7-8.9V6.4L12 3.5Z"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linejoin="round"></path>
+              <path d="m9.2 12 2 2 3.6-3.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            Conexión protegida · SportMind 2026
+          </p>
+        </section>
+
+        <!-- ══════════ Panel de formulario (derecha) ══════════ -->
+        <section
+          class="flex min-h-0 flex-col justify-center overflow-y-auto overscroll-contain bg-white p-[clamp(1.25rem,3.2vh,2.5rem)]"
+        >
+          <!-- Marca en móvil -->
+          <div class="mb-[clamp(1rem,3vh,2rem)] flex items-center gap-3 lg:hidden">
+            <span
+              class="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-md shadow-blue-600/25"
+              aria-hidden="true"
+            >
+              <img
+                src="/logo-sportmind-mark.png"
+                alt=""
+                width="194"
+                height="392"
+                class="h-6 w-auto"
+              />
+            </span>
+            <div>
+              <p class="text-base font-extrabold leading-tight tracking-tight text-slate-900">
+                SportMind
+              </p>
+              <p class="text-[11px] font-medium text-slate-500">Plataforma de análisis deportivo</p>
+            </div>
+          </div>
+
+          <header class="mb-[clamp(1rem,2.8vh,1.75rem)]">
+            <h1 id="formTitle" class="text-2xl font-extrabold tracking-tight text-slate-900">
+              Iniciar Sesión
+            </h1>
+            <p id="formSubtitle" class="mt-1.5 text-sm leading-relaxed text-slate-500">
+              Ingresa tus credenciales para acceder a la plataforma.
+            </p>
+          </header>
+
+          <form id="loginForm" novalidate class="space-y-[clamp(0.75rem,1.8vh,1.25rem)]">
+            <!-- Correo -->
+            <div class="form-group">
+              <label
+                for="email"
+                class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-600"
+              >
+                Correo electrónico
+              </label>
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" class="size-5">
+                    <rect x="3" y="5.5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6"
+                    ></rect>
+                    <path
+                      d="m4.5 8 6.4 4.7a2 2 0 0 0 2.2 0L19.5 8"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"></path>
+                  </svg>
+                </span>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="tu@correo.com"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15"
+                />
+              </div>
+            </div>
+
+            <!-- Contraseña actual (para login) -->
+            <div id="divPasswordActual" class="form-group">
+              <label
+                for="password"
+                class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-600"
+              >
+                Contraseña
+              </label>
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" class="size-5">
+                    <rect x="4.5" y="10" width="15" height="10" rx="2.5" stroke="currentColor" stroke-width="1.6"
+                    ></rect>
+                    <path
+                      d="M8 10V7.5a4 4 0 0 1 8 0V10"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linecap="round"></path>
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  required
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/15"
+                />
+              </div>
+            </div>
+
+            <!-- Nueva contraseña (para primer ingreso o cambio de contraseña) -->
+            <div id="divNuevaPassword" class="form-group" style="display:none;">
+              <label
+                for="newPassword"
+                class="mb-2 block text-[11px] font-bold uppercase tracking-wider text-amber-600"
+              >
+                Nueva Contraseña
+              </label>
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" class="size-5">
+                    <path
+                      d="M12 3.5 3.5 7v5c0 4.5 3.4 7.9 8.5 9.5 5.1-1.6 8.5-5 8.5-9.5V7L12 3.5Z"
+                      stroke="currentColor"
+                      stroke-width="1.6"
+                      stroke-linejoin="round"></path>
+                    <path
+                      d="M12 9v3.5m0 2.5h.01"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"></path>
+                  </svg>
+                </span>
+                <input
+                  type="password"
+                  id="newPassword"
+                  name="newPassword"
+                  placeholder="Nueva contraseña segura"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50/70 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/15"
+                />
+              </div>
+              <p
+                id="hintText"
+                class="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-amber-700"
+              >
+                ⚠️ Tu cuenta es nueva. Debes elegir una contraseña permanente para continuar.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              id="btnSubmit"
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/25 transition hover:from-blue-700 hover:to-blue-600 hover:shadow-blue-600/35 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/30 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
+            >
+              Entrar a SportMind
+            </button>
+          </form>
+
+          <div class="mt-[clamp(0.75rem,2vh,1.25rem)] text-center text-[13px] text-slate-500">
+            <button
+              type="button"
+              id="togglePasswordBtn"
+              class="cursor-pointer rounded font-semibold text-blue-600 underline-offset-4 transition hover:text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+            >
+              ¿Olvidaste o quieres cambiar tu contraseña?
+            </button>
+          </div>
+
+          <div id="mensaje" class="msg-box" role="status" aria-live="polite"></div>
+
+          <p
+            class="mt-[clamp(1rem,3vh,2rem)] border-t border-slate-100 pt-[clamp(0.75rem,2vh,1.25rem)] text-center text-[11px] text-slate-400"
+          >
+            © 2026 SportMind · Análisis de rendimiento deportivo
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      import { registrarAccionAWS } from "../services/loggerservice";
+
+      const LOGIN_API_URL = "/api/login";
+
+      let cognitoSession: string | undefined;
+      let currentEmail: string | undefined;
+      let isChangingPasswordMode = false;
+
+      const loginForm = document.getElementById("loginForm") as HTMLFormElement;
+      const emailInput = document.getElementById("email") as HTMLInputElement;
+      const passwordInput = document.getElementById("password") as HTMLInputElement;
+      const newPasswordInput = document.getElementById("newPassword") as HTMLInputElement;
+      const divPasswordActual = document.getElementById("divPasswordActual") as HTMLElement;
+      const divNuevaPassword = document.getElementById("divNuevaPassword") as HTMLElement;
+      const formTitle = document.getElementById("formTitle") as HTMLElement;
+      const formSubtitle = document.getElementById("formSubtitle") as HTMLElement;
+      const hintText = document.getElementById("hintText") as HTMLElement;
+      const btnSubmit = document.getElementById("btnSubmit") as HTMLButtonElement;
+      const togglePasswordBtn = document.getElementById("togglePasswordBtn") as HTMLButtonElement;
+      const msgEl = document.getElementById("mensaje") as HTMLElement;
+
+      function showMsg(text: string, type: 'loading'|'success'|'error'|'warning') {
+        msgEl.textContent = text;
+        msgEl.className = `msg-box visible ${type}`;
+      }
+
+      // Alternar entre modo Login y modo Cambiar Contraseña
+      togglePasswordBtn.addEventListener("click", () => {
+        isChangingPasswordMode = !isChangingPasswordMode;
+        msgEl.className = 'msg-box';
+
+        if (isChangingPasswordMode) {
+          formTitle.textContent = "Cambiar Contraseña";
+          formSubtitle.textContent = "Ingresa tu correo y define tu nueva clave.";
+          divPasswordActual.style.display = "none";
+          passwordInput.required = false;
+          divNuevaPassword.style.display = "block";
+          newPasswordInput.required = true;
+          hintText.textContent = "Introduce la nueva contraseña permanente.";
+          btnSubmit.textContent = "Actualizar Contraseña";
+          togglePasswordBtn.textContent = "← Volver a Iniciar Sesión";
+        } else {
+          formTitle.textContent = "Iniciar Sesión";
+          formSubtitle.textContent = "Ingresa tus credenciales para acceder a la plataforma.";
+          divPasswordActual.style.display = "block";
+          passwordInput.required = true;
+          divNuevaPassword.style.display = "none";
+          newPasswordInput.required = false;
+          btnSubmit.textContent = "Entrar a SportMind";
+          togglePasswordBtn.textContent = "¿Olvidaste o quieres cambiar tu contraseña?";
+        }
+      });
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const newPassword = newPasswordInput.value;
+
+        btnSubmit.disabled = true;
+
+        if (isChangingPasswordMode) {
+          showMsg("Actualizando contraseña...", "loading");
+          try {
+            const response = await fetch(LOGIN_API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "changePassword",
+                email,
+                newPassword
+              })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.error || "No se pudo actualizar la contraseña.");
+
+            showMsg("✅ ¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.", "success");
+            setTimeout(() => {
+              togglePasswordBtn.click(); // Volver al login
+              btnSubmit.disabled = false;
+            }, 1500);
+          } catch (error: any) {
+            showMsg("❌ " + (error.message || "Error al actualizar."), "error");
+            btnSubmit.disabled = false;
+          }
+          return;
+        }
+
+        // Flujo normal de Login
+        showMsg("Verificando credenciales...", "loading");
+
+        try {
+          let payload: any = { email, password };
+
+          if (cognitoSession) {
+            payload = {
+              email: currentEmail,
+              password,
+              newPassword,
+              session: cognitoSession,
+              action: "respondChallenge"
+            };
+          } else {
+            currentEmail = email;
+          }
+
+          const response = await fetch(LOGIN_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await response.json();
+
+          if (result.challenge === "NEW_PASSWORD_REQUIRED") {
+            cognitoSession = result.session;
+            divPasswordActual.style.display = "none";
+            divNuevaPassword.style.display = "block";
+            if (newPasswordInput) newPasswordInput.required = true;
+            btnSubmit.textContent = "Guardar y Entrar";
+            btnSubmit.disabled = false;
+            showMsg("⚠️ Debes establecer una nueva contraseña.", "warning");
+            return;
+          }
+
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || "Credenciales inválidas.");
+          }
+
+          localStorage.setItem("sportmind_token", result.token);
+
+          // REGISTRO EN AWS: Envía a DynamoDB el inicio de sesión exitoso con el usuario correspondiente
+          await registrarAccionAWS(`Inició sesión correctamente en la plataforma`);
+
+          showMsg("✅ ¡Bienvenido! Redirigiendo...", "success");
+          setTimeout(() => { window.location.replace("/inicio"); }, 600);
+
+        } catch (error: any) {
+          console.error(error);
+          showMsg("❌ " + (error.message || "Error al iniciar sesión."), "error");
+          cognitoSession = undefined;
+          btnSubmit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

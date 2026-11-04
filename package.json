@@ -1,0 +1,70 @@
+{
+  "name": "fe-sportmind",
+  "type": "module",
+  "version": "0.0.91",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "description": "SportMind Native Application",
+  "author": "SportMind",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "astro dev",
+    "api": "uvicorn src.services.api:app --reload",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "electron:dev": "concurrently -k -s first \"astro dev\" \"wait-on http-get://localhost:4321 && cross-env ELECTRON_DEV=1 ELECTRON_START_URL=http://localhost:4321/dashboard electron .\"",
+    "electron:preview": "npm run build && node electron/prepare-server.cjs && electron .",
+    "electron:dir": "npm run build && node electron/prepare-server.cjs && electron-builder --dir",
+    "electron:build": "npm run build && node electron/prepare-server.cjs && electron-builder --publish always",
+    "pack": "npm run build && node electron/prepare-server.cjs && electron-builder --dir",
+    "dist": "npm run build && node electron/prepare-server.cjs && electron-builder --publish always",
+    "dev:all": "concurrently \"npm run api\" \"npm run dev\""
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "build": {
+    "appId": "com.sportmind.app",
+    "productName": "SportMind",
+    "icon": "public/icon.ico",
+    "directories": {
+      "output": "release"
+    },
+    "nsis": {
+      "installerIcon": "public/installer-icon.ico",
+      "uninstallerIcon": "public/installer-icon.ico",
+      "oneClick": true,
+      "perMachine": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "PatoGonzalezz",
+      "repo": "fE-Sportmind"
+    }
+  },
+  "devDependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1153.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "chart.js": "^4.5.1",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^44.4.4",
+    "electron-builder": "^26.15.3",
+    "tailwindcss": "^4.3.3",
+    "wait-on": "^9.1.0"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.7",
+    "@aws-sdk/client-dynamodb": "^3.1153.0",
+    "@aws-sdk/lib-dynamodb": "^3.1153.0",
+    "astro": "^7.3.7",
+    "electron-log": "^5.3.0",
+    "electron-updater": "^6.3.9",
+    "html2canvas-pro": "^2.5.2",
+    "html2pdf": "^0.0.11",
+    "html2pdf.js": "^0.14.0",
+    "onnxruntime-web": "^1.30.0"
+  }
+}

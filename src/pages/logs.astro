@@ -1,0 +1,217 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <header class="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="max-w-xl">
+      <h1 class="text-[1.65rem] font-extrabold tracking-tight text-slate-900 sm:text-3xl">Historial de acciones</h1>
+      <p class="mt-1.5 text-sm leading-relaxed text-slate-500">
+        Registro de las acciones realizadas en la plataforma.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2.5">
+      <p class="inline-flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 text-sm font-semibold text-emerald-700">
+        <span class="size-2 rounded-full bg-emerald-500 motion-safe:animate-pulse" aria-hidden="true"></span>
+        Sistema activo
+      </p>
+      <button
+        type="button"
+        id="btn-limpiar-logs"
+        class="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-red-200 bg-white px-3.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+      >
+        <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
+          <path d="M4 6h12M8 6V4.5A1.5 1.5 0 0 1 9.5 3h1A1.5 1.5 0 0 1 12 4.5V6m-6.5 0l.7 9.2A1.5 1.5 0 0 0 7.7 16.5h4.6a1.5 1.5 0 0 0 1.5-1.3L14.5 6M8.5 9.5v4M11.5 9.5v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Limpiar historial
+      </button>
+    </div>
+  </header>
+
+  <!-- Terminal de logs -->
+  <section class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-[0_12px_32px_-16px_rgba(15,23,42,0.5)]" aria-label="Registro de acciones">
+    <div class="flex items-center justify-between gap-4 border-b border-slate-700 bg-slate-900 px-5 py-3.5">
+      <div class="flex shrink-0 gap-1.5" aria-hidden="true">
+        <span class="size-3 rounded-full bg-red-500"></span>
+        <span class="size-3 rounded-full bg-amber-500"></span>
+        <span class="size-3 rounded-full bg-emerald-500"></span>
+      </div>
+      <span class="min-w-0 truncate font-mono text-xs font-semibold text-slate-400">
+        SYSTEM_LOG_STREAM — SportMind v1.0 — UTF-8
+      </span>
+      <span id="log-count" class="shrink-0 text-xs tabular-nums text-slate-400">0 eventos</span>
+    </div>
+
+    <div
+      id="contenedor-logs"
+      role="log"
+      tabindex="0"
+      aria-label="Eventos registrados"
+      class="max-h-[65vh] overflow-y-auto p-5 font-mono text-[12.5px] leading-[1.9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+    >
+      <p class="py-10 text-center text-sm italic text-slate-400">Cargando eventos desde AWS…</p>
+    </div>
+  </section>
+
+  <!-- Confirmación para limpiar -->
+  <dialog
+    id="dialog-limpiar"
+    aria-labelledby="dialog-limpiar-title"
+    class="fixed inset-0 m-auto h-fit w-[min(92vw,26rem)] rounded-2xl bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-6">
+      <span class="inline-flex size-10 items-center justify-center rounded-full bg-red-50 text-red-600" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" class="size-5">
+          <path d="M10 3.5l7 12.2H3L10 3.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+          <path d="M10 8.5v3.2M10 13.9v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+      </span>
+      <h2 id="dialog-limpiar-title" class="mt-4 text-lg font-extrabold tracking-tight text-slate-900">
+        ¿Borrar todo el historial?
+      </h2>
+      <p class="mt-1.5 text-sm leading-relaxed text-slate-500">
+        Se eliminarán todas las acciones registradas. Esta acción no se puede deshacer.
+      </p>
+      <div class="mt-6 flex justify-end gap-2.5">
+        <button
+          type="button"
+          id="btn-cancelar-limpiar"
+          autofocus
+          class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="btn-confirmar-limpiar"
+          class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+        >
+          Sí, borrar
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // Validar sesión de Administrador
+    (function () {
+      const token = localStorage.getItem("sportmind_token");
+      if (!token) {
+        window.location.replace("/login");
+        return;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const grupos = payload["cognito:groups"] || payload["groups"] || [];
+        const esAdmin = Array.isArray(grupos)
+          ? grupos.some((g: unknown) => String(g).toLowerCase().includes("admin"))
+          : String(grupos).toLowerCase().includes("admin");
+
+        if (!esAdmin) {
+          window.location.replace("/dashboard");
+        }
+      } catch (e) {
+        window.location.replace("/login");
+      }
+    })();
+
+    import { LOGS_API_URL } from "../services/loggerservice"; 
+    const container = document.getElementById("contenedor-logs");
+    const btnLimpiar = document.getElementById("btn-limpiar-logs");
+    const logCount = document.getElementById("log-count");
+    const dialog = document.getElementById("dialog-limpiar") as HTMLDialogElement;
+    const btnCancelar = document.getElementById("btn-cancelar-limpiar");
+    const btnConfirmar = document.getElementById("btn-confirmar-limpiar");
+
+    const EMPTY_HTML =
+      '<p class="py-10 text-center text-sm italic text-slate-400">No hay acciones registradas todavía.</p>';
+    const LEVEL_TONE: Record<string, string> = {
+      ERROR: "text-red-400",
+      WARN: "text-amber-300",
+      WARNING: "text-amber-300",
+    };
+
+    const escapeHtml = (value: unknown) =>
+      String(value ?? "").replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string),
+      );
+
+    function parseLogEntry(log: string): string {
+      const match = log.match(/^\[(.+?)\]\s*\[(.+?)\]\s*\[(.+?)\]:\s*(.+)$/);
+      if (match) {
+        const [, ts, level, user, action] = match;
+        const levelTone = LEVEL_TONE[level.toUpperCase()] ?? "text-emerald-300";
+        return `<div class="break-words rounded px-1 text-slate-300 transition-colors hover:bg-white/5 hover:text-slate-100"><span class="text-sky-300">[${escapeHtml(ts)}]</span> <span class="${levelTone}">[${escapeHtml(level)}]</span> <span class="text-amber-300">[${escapeHtml(user)}]</span>: <span class="text-slate-100">${escapeHtml(action)}</span></div>`;
+      }
+      return `<div class="break-words rounded px-1 text-slate-300 transition-colors hover:bg-white/5 hover:text-slate-100">${escapeHtml(log)}</div>`;
+    }
+
+    async function cargarLogs() {
+      if (!container) return;
+      try {
+        const res = await fetch(LOGS_API_URL);
+        const data = await res.json();
+        const historial = data.success ? data.logs : [];
+
+        if (historial.length === 0) {
+          container.innerHTML = EMPTY_HTML;
+          if (logCount) logCount.textContent = "0 eventos";
+          return;
+        }
+
+        // Mantener sincronizado el respaldo local
+        try {
+          localStorage.setItem("sportmind_logs", JSON.stringify(historial));
+        } catch (_) {}
+
+        if (logCount)
+          logCount.textContent = `${historial.length} evento${historial.length > 1 ? "s" : ""}`;
+        
+        // Evitamos parpadeos si el contenido es idéntico al actual
+        const nuevoHtml = historial.map(parseLogEntry).join("");
+        if (container.innerHTML !== nuevoHtml) {
+          container.innerHTML = nuevoHtml;
+          container.scrollTop = container.scrollHeight;
+        }
+      } catch (e) {
+        console.error("Error al cargar los logs desde AWS:", e);
+        // Respaldo sin conexión: cargar desde localStorage si falla AWS
+        try {
+          const localLogs = JSON.parse(localStorage.getItem("sportmind_logs") || "[]");
+          if (localLogs.length > 0) {
+            const nuevoHtml = localLogs.map(parseLogEntry).join("");
+            container.innerHTML = nuevoHtml;
+            if (logCount)
+              logCount.textContent = `${localLogs.length} eventos (copia local)`;
+            return;
+          }
+        } catch (_) {}
+        container.innerHTML = '<p class="py-10 text-center text-sm italic text-red-400">Error al consultar los logs en AWS. Revisa tu conexión.</p>';
+      }
+    }
+
+    btnLimpiar?.addEventListener("click", () => dialog.showModal());
+    btnCancelar?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    btnConfirmar?.addEventListener("click", async () => {
+      try {
+        await fetch(LOGS_API_URL, { method: "DELETE" });
+        localStorage.removeItem("sportmind_logs");
+        await cargarLogs();
+      } catch (e) {
+        console.error("Error al limpiar logs", e);
+      }
+      dialog.close();
+    });
+
+    // Carga inicial
+    cargarLogs();
+
+    // Actualización automática (Polling) cada 10 segundos en segundo plano
+    setInterval(cargarLogs, 10000);
+  </script>
+</Layout>

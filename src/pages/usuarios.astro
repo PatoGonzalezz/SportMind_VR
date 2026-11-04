@@ -1,0 +1,504 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <script is:inline>
+    (function () {
+      const token = localStorage.getItem("sportmind_token");
+      if (!token) {
+        window.location.replace("/login");
+        return;
+      }
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const grupos = payload["cognito:groups"] || payload["groups"] || [];
+        const esAdmin = Array.isArray(grupos)
+          ? grupos.some((g) => String(g).toLowerCase().includes("admin"))
+          : String(grupos).toLowerCase().includes("admin");
+        if (!esAdmin) {
+          window.location.replace("/dashboard");
+        }
+      } catch (e) {
+        window.location.replace("/login");
+      }
+    })();
+  </script>
+
+  <!-- Encabezado -->
+  <header
+    class="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between"
+  >
+    <div class="max-w-xl">
+      <h1
+        class="text-[1.65rem] font-extrabold tracking-tight text-slate-900 sm:text-3xl"
+      >
+        Gestión de usuarios
+      </h1>
+      <p class="mt-1.5 text-sm leading-relaxed text-slate-500">
+        Listado y administración de entrenadores y administradores registrados.
+      </p>
+    </div>
+    <p
+      class="inline-flex shrink-0 items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700"
+    >
+      <span
+        class="size-2 rounded-full bg-blue-500 ring-4 ring-blue-500/15"
+        aria-hidden="true"></span>
+      <span id="users-count" aria-live="polite">0 usuarios</span>
+    </p>
+  </header>
+
+  <!-- Tabla -->
+  <section
+    class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_-12px_rgba(15,23,42,0.12)]"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[760px] border-collapse text-sm">
+        <caption class="sr-only">Usuarios registrados en la plataforma</caption>
+        <thead class="bg-slate-50">
+          <tr
+            class="border-b border-slate-200 text-left text-[13px] font-semibold text-slate-500"
+          >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Nombre</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Correo electrónico</th
+            >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5">Rol</th>
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5"
+              >Especialidad</th
+            >
+            <th scope="col" class="whitespace-nowrap px-5 py-3.5 text-right"
+              >Acciones</th
+            >
+          </tr>
+        </thead>
+        <tbody id="users-tbody" class="divide-y divide-slate-100">
+          <tr>
+            <td colspan="5" class="px-5 py-10 text-center text-slate-500"
+              >Cargando usuarios…</td
+            >
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Modal de edición -->
+  <dialog
+    id="edit-modal"
+    aria-labelledby="edit-title"
+    class="fixed inset-0 m-auto h-fit max-h-[92vh] w-[min(92vw,30rem)] overflow-y-auto rounded-2xl bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm"
+  >
+    <div class="p-6 sm:p-7">
+      <div class="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h2
+            id="edit-title"
+            class="text-lg font-extrabold tracking-tight text-slate-900"
+          >
+            Editar usuario
+          </h2>
+          <p id="edit-subtitle" class="mt-0.5 text-sm text-slate-500">
+            Actualiza los datos de la cuenta.
+          </p>
+        </div>
+        <button
+          type="button"
+          id="btn-close"
+          aria-label="Cerrar"
+          class="-mr-2 -mt-1 inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            class="size-5"
+            aria-hidden="true"
+          >
+            <path
+              d="M5 5l10 10M15 5L5 15"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="edit-form" class="space-y-4">
+        <div>
+          <label
+            for="edit-email"
+            class="mb-1.5 block text-[13px] font-semibold text-slate-600"
+            >Correo electrónico</label
+          >
+          <input
+            type="email"
+            id="edit-email"
+            disabled
+            class="block w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm text-slate-500"
+          />
+        </div>
+
+        <div>
+          <label
+            for="edit-nombre"
+            class="mb-1.5 block text-[13px] font-semibold text-slate-600"
+            >Nombre completo</label
+          >
+          <input
+            type="text"
+            id="edit-nombre"
+            required
+            autocomplete="off"
+            class="block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+          />
+        </div>
+
+        <div>
+          <label
+            for="edit-rol"
+            class="mb-1.5 block text-[13px] font-semibold text-slate-600"
+            >Rol</label
+          >
+          <div class="relative">
+            <select
+              id="edit-rol"
+              class="block w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-3.5 pr-10 text-sm text-slate-900 transition focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+            >
+              <option value="Entrenador">Entrenador</option>
+              <option value="Administrador">Administrador</option>
+            </select>
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 7.5l5 5 5-5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div id="group-especialidad">
+          <label
+            for="edit-especialidad"
+            class="mb-1.5 block text-[13px] font-semibold text-slate-600"
+            >Especialidad</label
+          >
+          <input
+            type="text"
+            id="edit-especialidad"
+            autocomplete="off"
+            placeholder="Ej: Kinesiólogo, psicólogo deportivo…"
+            class="block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+          />
+        </div>
+
+        <div>
+          <label
+            for="edit-password"
+            class="mb-1.5 block text-[13px] font-semibold text-slate-600"
+          >
+            Nueva contraseña <span class="font-normal text-slate-400"
+              >(opcional)</span
+            >
+          </label>
+          <input
+            type="password"
+            id="edit-password"
+            autocomplete="new-password"
+            placeholder="Déjala en blanco para no cambiarla"
+            class="block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+          />
+        </div>
+
+        <p
+          id="form-error"
+          role="alert"
+          class="hidden rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700"
+        >
+        </p>
+
+        <div class="flex justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            id="btn-cancel"
+            class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="btn-save"
+            class="inline-flex h-10 cursor-pointer items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    type Usuario = {
+      nombre?: string;
+      email: string;
+      rol?: string;
+      especialidadEspecifica?: string;
+    };
+
+    let currentUsers: Usuario[] = [];
+
+    const tbody = document.getElementById("users-tbody") as HTMLElement;
+    const usersCount = document.getElementById("users-count") as HTMLElement;
+    const editModal = document.getElementById(
+      "edit-modal",
+    ) as HTMLDialogElement;
+    const editForm = document.getElementById("edit-form") as HTMLFormElement;
+    const editSubtitle = document.getElementById(
+      "edit-subtitle",
+    ) as HTMLElement;
+    const editEmail = document.getElementById("edit-email") as HTMLInputElement;
+    const editNombre = document.getElementById(
+      "edit-nombre",
+    ) as HTMLInputElement;
+    const editRol = document.getElementById("edit-rol") as HTMLSelectElement;
+    const editEspecialidad = document.getElementById(
+      "edit-especialidad",
+    ) as HTMLInputElement;
+    const groupEspecialidad = document.getElementById(
+      "group-especialidad",
+    ) as HTMLElement;
+    const editPassword = document.getElementById(
+      "edit-password",
+    ) as HTMLInputElement;
+    const formError = document.getElementById("form-error") as HTMLElement;
+    const btnSave = document.getElementById("btn-save") as HTMLButtonElement;
+    const btnCancel = document.getElementById(
+      "btn-cancel",
+    ) as HTMLButtonElement;
+    const btnClose = document.getElementById("btn-close") as HTMLButtonElement;
+
+    const escapeHtml = (value: unknown) =>
+      String(value ?? "").replace(
+        /[&<>"']/g,
+        (c) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[c] as string,
+      );
+
+    const initials = (u: Usuario) => {
+      const source = (u.nombre || u.email || "?").trim();
+      const parts = source.split(/\s+/).filter(Boolean);
+      return (
+        (parts[0]?.[0] || "?") + (parts.length > 1 ? parts[1][0] : "")
+      ).toUpperCase();
+    };
+
+    const messageRow = (text: string, tone: "muted" | "error" = "muted") =>
+      `<tr><td colspan="5" class="px-5 py-10 text-center ${tone === "error" ? "text-red-600" : "text-slate-500"}">${text}</td></tr>`;
+
+    const skeletonRows = () =>
+      Array.from(
+        { length: 4 },
+        () => `
+        <tr>
+          <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="size-9 rounded-full bg-slate-100 motion-safe:animate-pulse"></div><div class="h-3.5 w-32 rounded bg-slate-100 motion-safe:animate-pulse"></div></div></td>
+          <td class="px-5 py-4"><div class="h-3.5 w-44 rounded bg-slate-100 motion-safe:animate-pulse"></div></td>
+          <td class="px-5 py-4"><div class="h-6 w-24 rounded-full bg-slate-100 motion-safe:animate-pulse"></div></td>
+          <td class="px-5 py-4"><div class="h-3.5 w-28 rounded bg-slate-100 motion-safe:animate-pulse"></div></td>
+          <td class="px-5 py-4"><div class="ml-auto h-9 w-20 rounded-lg bg-slate-100 motion-safe:animate-pulse"></div></td>
+        </tr>`,
+      ).join("");
+
+    const toggleEspecialidad = () => {
+      const admin = editRol.value === "Administrador";
+      groupEspecialidad.classList.toggle("hidden", admin);
+      if (admin) {
+        editEspecialidad.value = "No aplica";
+      } else if (editEspecialidad.value === "No aplica") {
+        editEspecialidad.value = "";
+      }
+    };
+
+    const showError = (message: string) => {
+      formError.textContent = message;
+      formError.classList.remove("hidden");
+    };
+    const clearError = () => {
+      formError.textContent = "";
+      formError.classList.add("hidden");
+    };
+
+    async function loadUsers() {
+      try {
+        const res = await fetch("/api/especialistas");
+        const data = await res.json();
+        if (data.success && data.especialistas) {
+          currentUsers = data.especialistas;
+          renderTable(currentUsers);
+        } else {
+          tbody.innerHTML = messageRow(
+            "No se pudieron cargar los usuarios. Recarga la página para intentarlo de nuevo.",
+            "error",
+          );
+        }
+      } catch (e) {
+        tbody.innerHTML = messageRow(
+          "No hay conexión con el servidor. Revisa tu red e inténtalo de nuevo.",
+          "error",
+        );
+      }
+    }
+
+    function renderTable(users: Usuario[]) {
+      usersCount.textContent = `${users.length} ${users.length === 1 ? "usuario" : "usuarios"}`;
+
+      if (users.length === 0) {
+        tbody.innerHTML = messageRow("Aún no hay usuarios registrados.");
+        return;
+      }
+
+      tbody.innerHTML = users
+        .map((u, index) => {
+          const isAdmin = u.email === "pat.gonzalezg@duocuc.cl";
+          const rol = isAdmin ? "Administrador" : "Entrenador";
+          const nombre = escapeHtml(u.nombre || "Sin nombre");
+          const email = escapeHtml(u.email);
+
+          // AQUÍ ESTABA EL DETALLE: Tomamos directamente u.especialidadEspecifica en vez de u.rol
+          const especialidad = isAdmin
+            ? "No aplica"
+            : escapeHtml(u.especialidadEspecifica || "General");
+
+          const avatarTone = isAdmin
+            ? "bg-blue-100 text-blue-700"
+            : "bg-emerald-100 text-emerald-700";
+          const badgeTone = isAdmin
+            ? "bg-blue-50 text-blue-700 ring-blue-200"
+            : "bg-emerald-50 text-emerald-700 ring-emerald-200";
+          const dotTone = isAdmin ? "bg-blue-500" : "bg-emerald-500";
+
+          return `
+          <tr class="transition-colors hover:bg-slate-50/70">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarTone}" aria-hidden="true">${escapeHtml(initials(u))}</span>
+                <span class="font-semibold text-slate-900">${nombre}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3.5 text-slate-500">${email}</td>
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${badgeTone}">
+                <span class="size-1.5 rounded-full ${dotTone}" aria-hidden="true"></span>${escapeHtml(rol)}
+              </span>
+            </td>
+            <td class="px-5 py-3.5 ${isAdmin ? "text-slate-400" : "text-slate-700"}">${especialidad}</td>
+            <td class="px-5 py-3.5 text-right">
+              ${
+                isAdmin
+                  ? `
+                <span class="text-xs font-medium text-slate-400 italic">No editable</span>
+              `
+                  : `
+                <button
+                  type="button"
+                  data-index="${index}"
+                  aria-label="Editar usuario ${nombre}"
+                  class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-lg bg-blue-600 px-3.5 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                >
+                  <svg viewBox="0 0 20 20" fill="none" class="size-4" aria-hidden="true">
+                    <path d="M11.5 4.5 15.5 8.5M3.5 16.5l3.2-.7L16.2 6.3a1.8 1.8 0 0 0-2.5-2.5L4.2 13.3l-.7 3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Editar
+                </button>
+              `
+              }
+            </td>
+          </tr>`;
+        })
+        .join("");
+    }
+
+    tbody.addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(
+        "button[data-index]",
+      );
+      if (!btn) return;
+
+      const user = currentUsers[Number(btn.dataset.index)];
+      if (!user) return;
+
+      clearError();
+      editSubtitle.textContent = user.nombre || user.email;
+      editEmail.value = user.email;
+      editNombre.value = user.nombre || "";
+      editRol.value =
+        user.email === "pat.gonzalezg@duocuc.cl"
+          ? "Administrador"
+          : "Entrenador";
+      editEspecialidad.value =
+        user.email === "pat.gonzalezg@duocuc.cl"
+          ? ""
+          : user.especialidadEspecifica || "";
+      editPassword.value = "";
+      toggleEspecialidad();
+      editModal.showModal();
+    });
+
+    editRol.addEventListener("change", toggleEspecialidad);
+
+    btnCancel.addEventListener("click", () => editModal.close());
+    btnClose.addEventListener("click", () => editModal.close());
+
+    editModal.addEventListener("click", (e) => {
+      if (e.target === editModal) editModal.close();
+    });
+
+    editForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearError();
+      btnSave.disabled = true;
+      btnSave.textContent = "Guardando…";
+
+      try {
+        const res = await fetch("/api/especialistas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: editEmail.value,
+            nombre: editNombre.value.trim(),
+            rol: editEspecialidad.value.trim(),
+            especialidadEspecifica: editEspecialidad.value.trim(),
+            passwordTemp: editPassword.value ? editPassword.value : undefined,
+          }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          editModal.close();
+          loadUsers();
+        } else {
+          showError(result.error || "No se pudieron guardar los cambios.");
+        }
+      } catch (err) {
+        showError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = "Guardar cambios";
+      }
+    });
+
+    tbody.innerHTML = skeletonRows();
+    loadUsers();
+  </script>
+</Layout>
