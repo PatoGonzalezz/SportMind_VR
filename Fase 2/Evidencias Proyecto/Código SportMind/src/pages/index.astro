@@ -1,0 +1,18 @@
+---
+// Redirección directa al nuevo dashboard
+return Astro.redirect('/dashboard');
+---
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=/dashboard" />
+    <title>SportMind — Redirigiendo...</title>
+    <script>
+      window.location.replace('/dashboard');
+    </script>
+  </head>
+  <body style="background:#f0f4f8; font-family:system-ui, -apple-system, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0;">
+    <p style="color:#64748b; font-size:15px; font-weight:500;">Redirigiendo a SportMind...</p>
+  </body>
+</html>

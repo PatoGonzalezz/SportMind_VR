@@ -1,0 +1,41 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and Package App
+        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AWS_API_URL: ${{ vars.AWS_API_URL }}
+          PUBLIC_AWS_API_URL: ${{ vars.PUBLIC_AWS_API_URL }}
+          COGNITO_API_URL: ${{ vars.COGNITO_API_URL }}
+          AWS_USUARIOS_API_URL: ${{ vars.AWS_USUARIOS_API_URL }}
+          PUBLIC_AWS_LOGS_API_URL: ${{ vars.PUBLIC_AWS_LOGS_API_URL }}
+          PUBLIC_SPORTMIND_METRICAS_API_URL: ${{ vars.PUBLIC_SPORTMIND_METRICAS_API_URL }}
+          PUBLIC_VR_METRICAS_API_URL: ${{ vars.PUBLIC_VR_METRICAS_API_URL }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_USER_POOL_ID: ${{ vars.AWS_USER_POOL_ID }}
+          PUBLIC_AWS_COGNITO_CLIENT_ID: ${{ vars.PUBLIC_AWS_COGNITO_CLIENT_ID }}
+          PUBLIC_AWS_COGNITO_DOMAIN: ${{ vars.PUBLIC_AWS_COGNITO_DOMAIN }}
+          PUBLIC_AWS_BUCKET_NAME: ${{ vars.PUBLIC_AWS_BUCKET_NAME }}
+          AWS_ESPECIALISTAS_TABLE_NAME: ${{ vars.AWS_ESPECIALISTAS_TABLE_NAME }}
+          AWS_LOGS_TABLE_NAME: ${{ vars.AWS_LOGS_TABLE_NAME }}

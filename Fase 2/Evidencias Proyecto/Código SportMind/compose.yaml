@@ -1,0 +1,15 @@
+services:
+  sportmind:
+    build:
+      context: .
+      args:
+        AWS_API_URL: ${AWS_API_URL:?Agrega AWS_API_URL al archivo .env}
+        PUBLIC_AWS_API_URL: ${PUBLIC_AWS_API_URL:?Agrega PUBLIC_AWS_API_URL al archivo .env}
+        COGNITO_API_URL: ${COGNITO_API_URL:-}
+        PUBLIC_SPORTMIND_METRICAS_API_URL: ${PUBLIC_SPORTMIND_METRICAS_API_URL:-}
+        PUBLIC_VR_METRICAS_API_URL: ${PUBLIC_VR_METRICAS_API_URL:-}
+        AWS_USUARIOS_API_URL: ${AWS_USUARIOS_API_URL:-}
+        PUBLIC_AWS_LOGS_API_URL: ${PUBLIC_AWS_LOGS_API_URL:-}
+    ports:
+      - "4321:4321"
+    restart: unless-stopped
